@@ -1,0 +1,24 @@
+{
+  "id": "com.niceforyou",
+  "version": "1.0.0",
+  "compatibility": ">=4.2.0",
+  "sdk": 3,
+  "name": {
+    "en": "NICE"
+  },
+  "description": {
+    "en": "Let Homey control NICE smarthome products."
+  },
+  "category": [
+    "appliances"
+  ],
+  "permissions": [],
+  "images": {
+    "large": "/assets/images/large.png",
+    "small": "/assets/images/small.png"
+  },
+  "author": {
+    "name": "Kaalus .",
+    "email": "homey@kaalus.nl"
+  }
+}
