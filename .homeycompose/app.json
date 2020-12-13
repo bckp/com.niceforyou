@@ -2,7 +2,7 @@
   "id": "com.niceforyou",
   "version": "1.0.0",
   "compatibility": ">=4.2.0",
-  "sdk": 3,
+  "sdk": 2,
   "name": {
     "en": "NICE"
   },
@@ -18,7 +18,7 @@
     "small": "/assets/images/small.png"
   },
   "author": {
-    "name": "Kaalus .",
+    "name": "Kaalus",
     "email": "homey@kaalus.nl"
   }
 }

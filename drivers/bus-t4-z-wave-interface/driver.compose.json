@@ -1,0 +1,41 @@
+{
+  "id": "bus-t4-z-wave-interface",
+  "name": {
+    "en": "Bus T4 Z-Wave interface"
+  },
+  "class": "homealarm",
+  "capabilities": [
+    "onoff",
+    "dim"
+  ],
+  "images": {
+    "large": "/drivers/bus-t4-z-wave-interface/assets/images/large.png",
+    "small": "/drivers/bus-t4-z-wave-interface/assets/images/small.png"
+  },
+  "zwave": {
+    "manufacturerId": 1089,
+    "productTypeId": [
+      9216
+    ],
+    "productId": [
+      4096
+    ],
+    "zwaveAllianceProductId": 3837,
+    "learnmode": {
+      "image": "{{driverAssetsPath}}/learnmode.svg",
+      "instruction": {
+        "en": "Press the S1 button 3 times, the LED's will start flashing."
+      }
+    },
+    "associationGroups": [
+      1
+    ],
+    "associationGroupsOptions": {
+      "1": {
+        "hint": {
+          "en": "Reports the device status to the Z-Wave gateway"
+        }
+      }
+    }
+  }
+}

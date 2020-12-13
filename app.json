@@ -1,3 +1,275 @@
 {
-  "_comment": "This file is generated. Please edit .homeycompose/app.json instead."
+  "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
+  "id": "com.niceforyou",
+  "version": "1.0.0",
+  "compatibility": ">=4.2.0",
+  "sdk": 2,
+  "name": {
+    "en": "NICE"
+  },
+  "description": {
+    "en": "Let Homey control NICE smarthome products."
+  },
+  "category": [
+    "appliances"
+  ],
+  "permissions": [],
+  "images": {
+    "large": "/assets/images/large.png",
+    "small": "/assets/images/small.png"
+  },
+  "author": {
+    "name": "Kaalus .",
+    "email": "homey@kaalus.nl"
+  },
+  "drivers": [
+    {
+      "id": "bus-t4-z-wave-interface",
+      "name": {
+        "en": "Bus T4 Z-Wave interface"
+      },
+      "class": "homealarm",
+      "capabilities": [
+        "onoff",
+        "dim"
+      ],
+      "images": {
+        "large": "/drivers/bus-t4-z-wave-interface/assets/images/large.png",
+        "small": "/drivers/bus-t4-z-wave-interface/assets/images/small.png"
+      },
+      "zwave": {
+        "manufacturerId": 1089,
+        "productTypeId": [
+          9216
+        ],
+        "productId": [
+          4096
+        ],
+        "zwaveAllianceProductId": 3837,
+        "learnmode": {
+          "image": "/drivers/bus-t4-z-wave-interface/assets/learnmode.svg",
+          "instruction": {
+            "en": "Press the S1 button 3 times, the LED's will start flashing."
+          }
+        },
+        "associationGroups": [
+          1
+        ],
+        "associationGroupsOptions": {
+          "1": {
+            "hint": {
+              "en": "Reports the device status to the Z-Wave gateway"
+            }
+          }
+        }
+      },
+      "settings": [
+        {
+          "id": "30",
+          "value": "0",
+          "label": {
+            "en": "Alarm configuration - 1st slot"
+          },
+          "hint": {
+            "en": "This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification. \r\nDefault value [0x00, 0x00, 0x00, 0x00] (disabled).\r\nThe 4 bytes must be converted to a single decimal value to be entered in the gateway sending the configuration parameter value.\r\nExample: Event: Home Security (0x07) Status: Motion Detected (0x08) Parameter: None (0x00) Action: Open (0x01) = 0x07080001 which is 117964801 decimal to be entered in the gateway."
+          },
+          "zwave": {
+            "index": 30,
+            "size": 4
+          },
+          "values": [
+            {
+              "id": "0",
+              "label": {
+                "en": "[LSB] – action"
+              }
+            },
+            {
+              "id": "256",
+              "label": {
+                "en": "Event/State Parameters"
+              }
+            },
+            {
+              "id": "65536",
+              "label": {
+                "en": "Notification Status"
+              }
+            },
+            {
+              "id": "16777216",
+              "label": {
+                "en": "[MSB] – Notification Type"
+              }
+            }
+          ],
+          "type": "dropdown"
+        },
+        {
+          "id": "31",
+          "value": "100597760",
+          "label": {
+            "en": "Alarm configuration - 2nd slot"
+          },
+          "hint": {
+            "en": "This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification. Default value [0x05, 0xFF, 0x00, 0x00](Water Alarm, any notification, no action). \r\nThe 4 bytes must be converted to a single decimal value to be entered in the gateway sending the configuration parameter value. Example: Event: Home Security (0x07) Status: Motion Detected (0x08) Parameter: None (0x00) Action: Open (0x01) = 0x07080001 which is 117964801 decimal to be entered in the gateway. "
+          },
+          "zwave": {
+            "index": 31,
+            "size": 4
+          },
+          "values": [
+            {
+              "id": "0",
+              "label": {
+                "en": "[LSB] – action"
+              }
+            },
+            {
+              "id": "256",
+              "label": {
+                "en": "Event/State Parameters"
+              }
+            },
+            {
+              "id": "65536",
+              "label": {
+                "en": "Notification Status"
+              }
+            },
+            {
+              "id": "16777216",
+              "label": {
+                "en": "[MSB] – Notification Type"
+              }
+            }
+          ],
+          "type": "dropdown"
+        },
+        {
+          "id": "32",
+          "value": "33488896",
+          "label": {
+            "en": "Alarm configuration - 3rd slot"
+          },
+          "hint": {
+            "en": "This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.\r\nDefault value[0x01, 0xFF, 0x00, 0x00](Smoke Alarm, any notification, no action). \r\nThe 4 bytes must be converted to a single decimal value to be entered in the gateway sending the configuration parameter value. Example: Event: Home Security (0x07) Status: Motion Detected (0x08) Parameter: None (0x00) Action: Open (0x01) = 0x07080001 which is 117964801 decimal to be entered in the gateway. "
+          },
+          "zwave": {
+            "index": 32,
+            "size": 4
+          },
+          "values": [
+            {
+              "id": "0",
+              "label": {
+                "en": "[LSB] – action"
+              }
+            },
+            {
+              "id": "256",
+              "label": {
+                "en": "Event/State Parameters"
+              }
+            },
+            {
+              "id": "65536",
+              "label": {
+                "en": "Notification Status"
+              }
+            },
+            {
+              "id": "16777216",
+              "label": {
+                "en": "[MSB] – Notification Type"
+              }
+            }
+          ],
+          "type": "dropdown"
+        },
+        {
+          "id": "33",
+          "value": "50266112",
+          "label": {
+            "en": "Alarm configuration - 4rd slot"
+          },
+          "hint": {
+            "en": "This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.\r\nDefault value [0x02, 0xFF, 0x00, 0x00] (CO Alarm, any notification, no action).\r\nThe 4 bytes must be converted to a single decimal value to be entered in the gateway sending the configuration parameter value. Example: Event: Home Security (0x07) Status: Motion Detected (0x08) Parameter: None (0x00) Action: Open (0x01) = 0x07080001 which is 117964801 decimal to be entered in the gateway. "
+          },
+          "zwave": {
+            "index": 33,
+            "size": 4
+          },
+          "values": [
+            {
+              "id": "0",
+              "label": {
+                "en": "[LSB] – action"
+              }
+            },
+            {
+              "id": "256",
+              "label": {
+                "en": "Event/State Parameters"
+              }
+            },
+            {
+              "id": "65536",
+              "label": {
+                "en": "Notification Status"
+              }
+            },
+            {
+              "id": "16777216",
+              "label": {
+                "en": "[MSB] – Notification Type"
+              }
+            }
+          ],
+          "type": "dropdown"
+        },
+        {
+          "id": "34",
+          "value": "83820544",
+          "label": {
+            "en": "Alarm configuration - 5th slot"
+          },
+          "hint": {
+            "en": "This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.\r\nDefault value [0x04, 0xFF, 0x00, 0x00] (Heat Alarm, any notification, no action).\r\nThe 4 bytes must be converted to a single decimal value to be entered in the gateway sending the configuration parameter value. Example: Event: Home Security (0x07) Status: Motion Detected (0x08) Parameter: None (0x00) Action: Open (0x01) = 0x07080001 which is 117964801 decimal to be entered in the gateway. "
+          },
+          "zwave": {
+            "index": 34,
+            "size": 4
+          },
+          "values": [
+            {
+              "id": "0",
+              "label": {
+                "en": "[LSB] – action"
+              }
+            },
+            {
+              "id": "256",
+              "label": {
+                "en": "Event/State Parameters"
+              }
+            },
+            {
+              "id": "65536",
+              "label": {
+                "en": "Notification Status"
+              }
+            },
+            {
+              "id": "16777216",
+              "label": {
+                "en": "[MSB] – Notification Type"
+              }
+            }
+          ],
+          "type": "dropdown"
+        }
+      ]
+    }
+  ]
 }

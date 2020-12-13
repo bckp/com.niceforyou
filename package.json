@@ -4,5 +4,9 @@
   "main": "app.js",
   "devDependencies": {
     "homey": "^2.9.2"
+  },
+  "dependencies": {
+    "homey-meshdriver": "^2.0.2",
+    "homey-zwavedriver": "^2.0.2"
   }
 }
