@@ -1,0 +1,36 @@
+{
+  "triggers": [
+    {
+      "id": "bus_t4_gate_state_changed",
+      "title": {
+        "en": "Gate state changed"
+      },
+      "tokens": [
+        {
+          "name": "state",
+          "type": "string",
+          "title": {
+            "en": "State"
+          },
+          "example": "Closed"
+        }
+      ]
+    },
+    {
+      "id": "bus_t4_gate_notification_changed",
+      "title": {
+        "en": "Notification changed"
+      },
+      "tokens": [
+        {
+          "name": "notification",
+          "type": "string",
+          "title": {
+            "en": "Notification"
+          },
+          "example": "beam"
+        }
+      ]
+    }
+  ]
+}

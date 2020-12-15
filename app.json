@@ -19,8 +19,74 @@
     "small": "/assets/images/small.png"
   },
   "author": {
-    "name": "Kaalus",
-    "email": "homey@kaalus.nl"
+    "name": "Radovan Kepák",
+    "email": "homey@kepakovi.cz"
+  },
+  "contributors": {
+    "developers": [
+      {
+        "name": "Radovan Kepák",
+        "email": "homey@kepakovi.cz"
+      },
+      {
+        "name": "Kaalus",
+        "email": "homey@kaalus.nl"
+      }
+    ]
+  },
+  "bugs": {
+    "url": "https://github.com/bckp/com.niceforyou/issues"
+  },
+  "source": "https://github.com/bckp/com.niceforyou",
+  "flow": {
+    "triggers": [
+      {
+        "id": "bus_t4_gate_state_changed",
+        "title": {
+          "en": "Gate state changed"
+        },
+        "tokens": [
+          {
+            "name": "state",
+            "type": "string",
+            "title": {
+              "en": "State"
+            },
+            "example": "Closed"
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=bus-t4-z-wave-interface"
+          }
+        ]
+      },
+      {
+        "id": "bus_t4_gate_notification_changed",
+        "title": {
+          "en": "Notification changed"
+        },
+        "tokens": [
+          {
+            "name": "notification",
+            "type": "string",
+            "title": {
+              "en": "Notification"
+            },
+            "example": "beam"
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=bus-t4-z-wave-interface"
+          }
+        ]
+      }
+    ]
   },
   "drivers": [
     {
@@ -28,10 +94,11 @@
       "name": {
         "en": "Bus T4 Z-Wave interface"
       },
-      "class": "homealarm",
+      "class": "other",
       "capabilities": [
         "onoff",
-        "dim"
+        "state",
+        "notification"
       ],
       "images": {
         "large": "/drivers/bus-t4-z-wave-interface/assets/images/large.png",
@@ -271,5 +338,85 @@
         }
       ]
     }
-  ]
+  ],
+  "capabilities": {
+    "notification": {
+      "type": "enum",
+      "title": {
+        "en": "Blocked by"
+      },
+      "values": [
+        {
+          "id": "engine",
+          "title": {
+            "en": "Motor resistance"
+          }
+        },
+        {
+          "id": "beam",
+          "title": {
+            "en": "Safety beam"
+          }
+        },
+        {
+          "id": "external",
+          "title": {
+            "en": "External device"
+          }
+        }
+      ],
+      "desc": {
+        "en": "Notification"
+      },
+      "uiComponent": "sensor",
+      "getable": true,
+      "setable": true,
+      "icon": "/assets/notification.svg"
+    },
+    "state": {
+      "type": "enum",
+      "title": {
+        "en": "State"
+      },
+      "values": [
+        {
+          "id": "open",
+          "title": {
+            "en": "Open"
+          }
+        },
+        {
+          "id": "opening",
+          "title": {
+            "en": "Opening"
+          }
+        },
+        {
+          "id": "stopped",
+          "title": {
+            "en": "Stopped"
+          }
+        },
+        {
+          "id": "closing",
+          "title": {
+            "en": "Closing"
+          }
+        },
+        {
+          "id": "closed",
+          "title": {
+            "en": "Closed"
+          }
+        }
+      ],
+      "desc": {
+        "en": "Current state of gate"
+      },
+      "uiComponent": "sensor",
+      "getable": true,
+      "setable": true,
+      "icon": "/assets/state.svg"
+    }
+  }
 }

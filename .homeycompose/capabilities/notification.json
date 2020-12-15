@@ -1,0 +1,33 @@
+{
+  "type": "enum",
+  "title": {
+    "en": "Blocker"
+  },
+  "values": [
+    {
+      "id": "engine",
+      "title": {
+        "en": "Motor resistance"
+      }
+    },
+    {
+      "id": "beam",
+      "title": {
+        "en": "Safety beam"
+      }
+    },
+    {
+      "id": "external",
+      "title": {
+        "en": "External device"
+      }
+    }
+  ],
+  "desc": {
+    "en": "Notification"
+  },
+  "uiComponent": "sensor",
+  "getable": true,
+  "setable": true,
+  "icon": "/assets/notification.svg"
+}

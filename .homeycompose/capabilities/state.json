@@ -1,0 +1,45 @@
+{
+  "type": "enum",
+  "title": {
+    "en": "State"
+  },
+  "values": [
+    {
+      "id": "open",
+      "title": {
+        "en": "Open"
+      }
+    },
+    {
+      "id": "opening",
+      "title": {
+        "en": "Opening"
+      }
+    },
+    {
+      "id": "stopped",
+      "title": {
+        "en": "Stopped"
+      }
+    },
+    {
+      "id": "closing",
+      "title": {
+        "en": "Closing"
+      }
+    },
+    {
+      "id": "closed",
+      "title": {
+        "en": "Closed"
+      }
+    }
+  ],
+  "desc": {
+    "en": "Current state of gate"
+  },
+  "uiComponent": "sensor",
+  "getable": true,
+  "setable": true,
+  "icon": "/assets/state.svg"
+}

@@ -3,10 +3,11 @@
   "name": {
     "en": "Bus T4 Z-Wave interface"
   },
-  "class": "homealarm",
+  "class": "other",
   "capabilities": [
     "onoff",
-    "dim"
+    "state",
+    "notification"
   ],
   "images": {
     "large": "/drivers/bus-t4-z-wave-interface/assets/images/large.png",
