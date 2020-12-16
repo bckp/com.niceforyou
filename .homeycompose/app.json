@@ -1,11 +1,12 @@
 {
   "id": "com.niceforyou",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "compatibility": ">=4.2.0",
   "sdk": 2,
   "name": {
     "en": "Nice"
   },
+  "brandColor": "#004C92",
   "description": {
     "en": "Designing a Nice World"
   },
