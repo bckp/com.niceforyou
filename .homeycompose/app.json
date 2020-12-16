@@ -4,10 +4,10 @@
   "compatibility": ">=4.2.0",
   "sdk": 2,
   "name": {
-    "en": "NICE"
+    "en": "Nice"
   },
   "description": {
-    "en": "Let Homey control NICE smarthome products."
+    "en": "Designing a Nice World"
   },
   "category": [
     "appliances"
@@ -32,9 +32,5 @@
         "email": "homey@kaalus.nl"
       }
     ]
-  },
-  "bugs": {
-    "url": "https://github.com/bckp/com.niceforyou/issues"
-  },
-  "source": "https://github.com/bckp/com.niceforyou"
+  }
 }
