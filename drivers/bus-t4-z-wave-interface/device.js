@@ -2,24 +2,33 @@
 
 const {ZwaveDevice} = require('homey-meshdriver');
 
-const gateState = {
-    0: 'closed',
-    198: 'open',
-    254: 'closing',
-    353: 'opening',
-    508: 'stopped',
+const STATE_OPEN = 'open';
+const STATE_CLOSED = 'closed';
+const STATE_OPENING = 'opening';
+const STATE_CLOSING = 'closing';
+const STATE_STOPPED = 'stopped';
+
+const GATE_STATE = {
+    0: STATE_CLOSED,
+    198: STATE_OPEN,
+    254: STATE_CLOSING,
+    353: STATE_OPENING,
+    508: STATE_STOPPED,
 }
 
-const obstacleSource = {
+const LIST_STATES_OPENING = [
+    STATE_OPEN, STATE_OPENING,
+]
+
+const LIST_STATES_CLOSING = [
+    STATE_CLOSING, STATE_CLOSED,
+]
+
+const OBSTACLE_SOURCE = {
     71: 'engine',
     72: 'beam',
     76: 'external',
 }
-
-const obstacleResetState = [
-    gateState["0"],
-    gateState["254"],
-]
 
 class BusT4Device extends ZwaveDevice {
 
@@ -27,10 +36,12 @@ class BusT4Device extends ZwaveDevice {
         this.log('BusT4Device has been inited');
         this.enableDebug();
 
+        // SDKv2 (will be removed in v3)
         this.driver = this.getDriver();
 
         // Open/close the gate
         this.registerCapability('onoff', 'SWITCH_MULTILEVEL', {
+            setParserV4: this._gateSetParser.bind(this),
             reportParser: this._gateReportParser.bind(this),
             reportParserOverride: true,
         });
@@ -39,46 +50,86 @@ class BusT4Device extends ZwaveDevice {
         this.registerReportListener('NOTIFICATION', 'NOTIFICATION_REPORT', report => {
             this.log('Notification received', report);
 
-            if (report && report.hasOwnProperty('Event') && Object.keys(obstacleSource).includes(report.Event.toString())) {
-                this.setNotification(obstacleSource[report.Event]);
+            if (report && report.hasOwnProperty('Event') && Object.keys(OBSTACLE_SOURCE).includes(report.Event.toString())) {
+                this.setNotification(OBSTACLE_SOURCE[report.Event]);
             }
         });
 
-        // State change listener
-        this.registerCapabilityListener('state', state => {
-            if (obstacleResetState.includes(state)) {
-                this.setNotification(null);
-            }
+        // Set capabilities from current state
+        this.setNotification(null, true);
 
-            return Promise.resolve();
-        });
-
-        // Reset notification
-        await this.setCapabilityValue('notification', null);
+        // Refresh state, so we know what we are up to
+        this.refreshCapabilityValue('onoff', 'SWITCH_MULTILEVEL').catch(
+            err => this.log('Refresh ON/OFF failed', err)
+        );
     }
 
     /**
      * Set state capability and trigger flows
      * @param {string} state
      */
-    setState(state) {
+    setState(state, silent = false) {
+        // State is same, as what we want set
+        if (this.getCapabilityValue('state') === state) {
+            return;
+        }
+
         this.setCapabilityValue('state', state).catch(
             err => this.log(`Could not set capability value for state`, err)
         )
-        this.driver.stateChangedTrigger.trigger(this, {state: state});
+
+        // Reset notification on closing/closed
+        if (LIST_STATES_CLOSING.includes(state)) {
+            this.setNotification(null);
+        }
+
+        // If no silent mode for init, trigger
+        if (!silent) {
+            this.driver.stateChangedTrigger.trigger(this, {state: state});
+        }
     }
 
     /**
      * Set notification capability and trigger flows
      * @param {string|null} notification
      */
-    setNotification(notification) {
+    setNotification(notification, silent = false) {
+        // Notification is already there
+        if (this.getCapabilityValue('notification') === notification) {
+            return;
+        }
+
         this.setCapabilityValue('notification', notification).catch(
             err => this.log(`Could not set capability value for notification`, err)
         )
-        if (notification !== null) {
+
+        // If notification is set, and no silent mode for init, trigger
+        if (notification !== null && !silent) {
             this.driver.notificationReceivedTrigger.trigger(this, {notification: notification});
         }
+    }
+
+    /**
+     * Set parser
+     * @param value
+     * @returns {{"Dimming Duration": string, Value: (string)}}
+     * @private
+     */
+    _gateSetParser(value) {
+        this.log('Set parser', value);
+
+        const state = this.getCapabilityValue('state');
+        const isOpeningState = LIST_STATES_OPENING.includes(state);
+        const isClosingState = LIST_STATES_CLOSING.includes(state);
+
+        if ((value && !isOpeningState) || (!value && !isClosingState)) {
+            this.setState(value ? STATE_OPEN : STATE_CLOSED);
+        }
+
+        return {
+            Value: value ? 'on/enable' : 'off/disable',
+            'Dimming Duration': 'Default',
+        };
     }
 
     /**
@@ -99,14 +150,12 @@ class BusT4Device extends ZwaveDevice {
 
             // Calculate stateCode and stateText
             const stateCode = currentValue + targetValue;
-            const stateText = gateState[stateCode];
+            const stateText = GATE_STATE[stateCode];
 
             this.log(`Gate status ${stateCode}, parsed: ${stateText}`);
 
             // Change state only if real change occur
-            if (this.getCapabilityValue('state') !== stateText) {
-                this.setState(stateText);
-            }
+            this.setState(stateText);
 
             return stateCode !== 0;
         }
