@@ -7,5 +7,8 @@
   },
   "1.0.3": {
     "en": "Fixed notification not recieved if obstacle is detected"
+  },
+  "1.0.4": {
+    "en": "Fixed several issues (state and notification)"
   }
 }
