@@ -1,9 +1,9 @@
 {
   "triggers": [
     {
-      "id": "bus_t4_gate_state_changed",
+      "id": "bus_t4_state_changed",
       "title": {
-        "en": "Gate state changed"
+        "en": "State changed"
       },
       "tokens": [
         {
@@ -17,9 +17,9 @@
       ]
     },
     {
-      "id": "bus_t4_gate_notification_changed",
+      "id": "bus_t4_notification_received",
       "title": {
-        "en": "Gate notification changed"
+        "en": "Notification received"
       },
       "tokens": [
         {

@@ -39,7 +39,7 @@ class BusT4Device extends ZwaveDevice {
         this.registerReportListener('NOTIFICATION', 'NOTIFICATION_REPORT', report => {
             this.log('Notification received', report);
 
-            if (report && report.hasOwnProperty('Event') && Object.keys(obstacleSource).includes(report.Event)) {
+            if (report && report.hasOwnProperty('Event') && Object.keys(obstacleSource).includes(report.Event.toString())) {
                 this.setNotification(obstacleSource[report.Event]);
             }
         });
@@ -50,7 +50,7 @@ class BusT4Device extends ZwaveDevice {
                 this.setNotification(null);
             }
 
-           return Promise.resolve();
+            return Promise.resolve();
         });
 
         // Reset notification
@@ -76,6 +76,9 @@ class BusT4Device extends ZwaveDevice {
         this.setCapabilityValue('notification', notification).catch(
             err => this.log(`Could not set capability value for notification`, err)
         )
+        if (notification !== null) {
+            this.driver.notificationReceivedTrigger.trigger(this, {notification: notification});
+        }
     }
 
     /**
