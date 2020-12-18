@@ -4,5 +4,8 @@
   },
   "1.0.2": {
     "en": "Small fixes"
+  },
+  "1.0.3": {
+    "en": "Fixed notification not recieved if obstacle is detected"
   }
 }
