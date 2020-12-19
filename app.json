@@ -35,6 +35,10 @@
       }
     ]
   },
+  "bugs": {
+    "url": "https://github.com/bckp/com.niceforyou/issues"
+  },
+  "source": "https://github.com/bckp/com.niceforyou",
   "flow": {
     "triggers": [
       {
@@ -340,7 +344,7 @@
     "notification": {
       "type": "enum",
       "title": {
-        "en": "Blocker"
+        "en": "Last blocker"
       },
       "values": [
         {

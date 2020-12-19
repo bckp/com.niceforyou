@@ -33,5 +33,9 @@
         "email": "homey@kaalus.nl"
       }
     ]
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/bckp/com.niceforyou/issues"
+  },
+  "source": "https://github.com/bckp/com.niceforyou"
 }

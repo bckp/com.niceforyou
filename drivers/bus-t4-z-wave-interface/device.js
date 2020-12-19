@@ -16,14 +16,6 @@ const GATE_STATE = {
     508: STATE_STOPPED,
 }
 
-const LIST_STATES_OPENING = [
-    STATE_OPEN, STATE_OPENING,
-]
-
-const LIST_STATES_CLOSING = [
-    STATE_CLOSING, STATE_CLOSED,
-]
-
 const OBSTACLE_SOURCE = {
     71: 'engine',
     72: 'beam',
@@ -33,10 +25,10 @@ const OBSTACLE_SOURCE = {
 class BusT4Device extends ZwaveDevice {
 
     async onMeshInit() {
-        this.log('BusT4Device has been inited');
+        this.log('BusT4Device has been initialized');
         this.enableDebug();
 
-        // SDKv2 (will be removed in v3)
+        // Get driver
         this.driver = this.getDriver();
 
         // Open/close the gate
@@ -67,6 +59,7 @@ class BusT4Device extends ZwaveDevice {
     /**
      * Set state capability and trigger flows
      * @param {string} state
+     * @param {boolean} silent
      */
     setState(state, silent = false) {
         // State is same, as what we want set
@@ -78,8 +71,8 @@ class BusT4Device extends ZwaveDevice {
             err => this.log(`Could not set capability value for state`, err)
         )
 
-        // Reset notification on closing/closed
-        if (LIST_STATES_CLOSING.includes(state)) {
+        // Reset notification on closed (closing is passed wrongly sometimes)
+        if (STATE_CLOSED === state) {
             this.setNotification(null);
         }
 
@@ -92,6 +85,7 @@ class BusT4Device extends ZwaveDevice {
     /**
      * Set notification capability and trigger flows
      * @param {string|null} notification
+     * @param {boolean} silent
      */
     setNotification(notification, silent = false) {
         // Notification is already there
@@ -119,10 +113,10 @@ class BusT4Device extends ZwaveDevice {
         this.log('Set parser', value);
 
         const state = this.getCapabilityValue('state');
-        const isOpeningState = LIST_STATES_OPENING.includes(state);
-        const isClosingState = LIST_STATES_CLOSING.includes(state);
-
-        if ((value && !isOpeningState) || (!value && !isClosingState)) {
+        if (
+            (value && state !== STATE_OPEN)
+            || (!value && state !== STATE_CLOSED)
+        ) {
             this.setState(value ? STATE_OPEN : STATE_CLOSED);
         }
 

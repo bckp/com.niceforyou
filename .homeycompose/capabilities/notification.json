@@ -1,7 +1,7 @@
 {
   "type": "enum",
   "title": {
-    "en": "Blocker"
+    "en": "Last blocker"
   },
   "values": [
     {
