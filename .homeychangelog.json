@@ -10,5 +10,8 @@
   },
   "1.0.4": {
     "en": "Fixed several issues (state and notification)"
+  },
+  "1.0.5": {
+    "en": "Notification is reset only when gate is closed"
   }
 }
