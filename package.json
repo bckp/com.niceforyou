@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "main": "app.js",
   "devDependencies": {
-    "homey": "^2.9.2"
+    "homey": "^2.10.0"
   },
   "dependencies": {
-    "homey-meshdriver": "^2.0.2"
+    "homey-meshdriver": "^2.0.2",
+    "homey-zwavedriver": "^2.1.0"
   }
 }

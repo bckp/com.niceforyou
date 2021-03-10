@@ -7,10 +7,9 @@ class BusT4Driver extends Homey.Driver {
   onInit() {
     super.onInit();
 
-    this.stateChangedTrigger = new Homey.FlowCardTriggerDevice('bus_t4_state_changed').register();
-    this.notificationReceivedTrigger = new Homey.FlowCardTriggerDevice('bus_t4_notification_received').register();
+    this.stateChangedTrigger = this.homey.flow.getDeviceTriggerCard('bus_t4_state_changed');
+    this.notificationReceivedTrigger = this.homey.flow.getDeviceTriggerCard('bus_t4_notification_received');
   }
-
 }
 
 module.exports = BusT4Driver;
