@@ -13,5 +13,8 @@
   },
   "1.0.5": {
     "en": "Notification is reset only when gate is closed"
+  },
+  "1.1.0": {
+    "en": "Updated to SDKv3"
   }
 }
