@@ -1,5 +1,20 @@
 [
   {
+    "id": "gate_state_timeout",
+    "value": 10000,
+    "label": {
+      "en": "State check"
+    },
+    "hint": {
+      "en": "This parameter determines time, that App should wait before considering gate open/close when initiated change.\r\n\r\nThis is only usefull if you control gate with ZWave network. If any other state change happend (like beam detection) this timer will be skipped."
+    },
+    "attr": {
+      "min": 1000,
+      "max": 50000
+    },
+    "type": "number"
+  },
+  {
     "id": "30",
     "value": "0",
     "label": {

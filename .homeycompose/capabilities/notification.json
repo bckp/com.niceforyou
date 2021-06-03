@@ -19,7 +19,7 @@
     {
       "id": "external",
       "title": {
-        "en": "External device"
+        "en": "External device / power issue"
       }
     }
   ],
@@ -28,6 +28,6 @@
   },
   "uiComponent": "sensor",
   "getable": true,
-  "setable": true,
+  "setable": false,
   "icon": "/assets/notification.svg"
 }

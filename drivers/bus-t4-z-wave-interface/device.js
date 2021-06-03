@@ -23,6 +23,7 @@ const OBSTACLE_SOURCE = {
 }
 
 class BusT4Device extends ZwaveDevice {
+    _setDelayed = false;
 
     async onMeshInit() {
         this.log('BusT4Device has been initialized');
@@ -59,6 +60,11 @@ class BusT4Device extends ZwaveDevice {
      * @param {boolean} silent
      */
     setState(state, silent = false) {
+        // Reset delayed change, if any
+        if (this._setDelayed) {
+            this._setDelayed = false;
+        }
+
         // State is same, as what we want set
         if (this.getCapabilityValue('state') === state) {
             return;
@@ -118,13 +124,32 @@ class BusT4Device extends ZwaveDevice {
             (value && state !== STATE_OPEN)
             || (!value && state !== STATE_CLOSED)
         ) {
-            this.setState(value ? STATE_OPEN : STATE_CLOSED);
+            // set state, enable delayed state change
+            this.setState(value ? STATE_OPENING : STATE_CLOSING);
+            this._setDelayed = true;
+
+            // set timeout by user setting value, to change state again
+            setTimeout(() => this._setDelayedState(value ? STATE_OPEN : STATE_CLOSED), this.getSetting('gate_state_timeout') || 10000);
         }
 
         return {
             Value: value ? 'on/enable' : 'off/disable',
             'Dimming Duration': 'Default',
         };
+    }
+
+    /**
+     * Set delayed state change, this only perform action if _setDelayed is true
+     * @param state
+     * @private
+     */
+    _setDelayedState(state) {
+        if (!this._setDelayed) {
+            this.log('State already changed, skipping...');
+            return;
+        }
+
+        this.setState(state);
     }
 
     /**
@@ -152,7 +177,8 @@ class BusT4Device extends ZwaveDevice {
             // Change state only if real change occur
             this.setState(stateText);
 
-            return stateCode !== 0;
+            // STATE_CLOSED || STATE_CLOSING
+            return stateCode !== 0 && stateCode !== 254;
         }
     }
 }

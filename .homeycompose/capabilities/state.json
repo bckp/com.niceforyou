@@ -40,6 +40,6 @@
   },
   "uiComponent": "sensor",
   "getable": true,
-  "setable": true,
+  "setable": false,
   "icon": "/assets/state.svg"
 }
