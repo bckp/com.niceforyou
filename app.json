@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.niceforyou",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "compatibility": ">=5.0.0",
   "sdk": 3,
   "name": {
@@ -40,6 +40,17 @@
   },
   "source": "https://github.com/bckp/com.niceforyou",
   "flow": {
+    "conditions": [
+      {
+        "title": {
+          "en": "Gate is closing"
+        },
+        "hint": {
+          "en": "Check if gate is in process of closing."
+        },
+        "id": "gate-is-closing"
+      }
+    ],
     "triggers": [
       {
         "id": "bus_t4_state_changed",
@@ -53,7 +64,7 @@
             "title": {
               "en": "State"
             },
-            "example": "Closed"
+            "example": "closed"
           }
         ],
         "args": [
@@ -113,6 +124,7 @@
         "productId": [
           4096
         ],
+        "requireSecure": true,
         "zwaveAllianceProductId": 3837,
         "learnmode": {
           "image": "/drivers/bus-t4-z-wave-interface/assets/learnmode.svg",
@@ -132,6 +144,21 @@
         }
       },
       "settings": [
+        {
+          "id": "gate_state_timeout",
+          "value": 10000,
+          "label": {
+            "en": "State check"
+          },
+          "hint": {
+            "en": "This parameter determines time, that App should wait before considering gate open/close when initiated change.\r\n\r\nThis is only usefull if you control gate with ZWave network. If any other state change happend (like beam detection) this timer will be skipped."
+          },
+          "attr": {
+            "min": 1000,
+            "max": 50000
+          },
+          "type": "number"
+        },
         {
           "id": "30",
           "value": "0",
@@ -362,7 +389,7 @@
         {
           "id": "external",
           "title": {
-            "en": "External device"
+            "en": "External device / power issue"
           }
         }
       ],
@@ -371,7 +398,7 @@
       },
       "uiComponent": "sensor",
       "getable": true,
-      "setable": true,
+      "setable": false,
       "icon": "/assets/notification.svg"
     },
     "state": {
@@ -416,7 +443,7 @@
       },
       "uiComponent": "sensor",
       "getable": true,
-      "setable": true,
+      "setable": false,
       "icon": "/assets/state.svg"
     }
   }
