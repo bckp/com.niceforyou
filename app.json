@@ -376,12 +376,6 @@
       "title": {
         "en": "Last blocker"
       },
-      "titleFormatted": {
-        "en": "Last blocker"
-      },
-      "hint": {
-        "en": "Notify about reasson of gate stop"
-      },
       "values": [
         {
           "id": "engine",
@@ -414,12 +408,6 @@
       "type": "enum",
       "title": {
         "en": "State"
-      },
-      "titleFormatted": {
-        "en": "State"
-      },
-      "hint": {
-        "en": "Notifies about change of gate state."
       },
       "values": [
         {

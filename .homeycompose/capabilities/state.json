@@ -3,12 +3,6 @@
   "title": {
     "en": "State"
   },
-  "titleFormatted": {
-    "en": "State"
-  },
-  "hint": {
-    "en": "Notifies about change of gate state."
-  },
   "values": [
     {
       "id": "open",
