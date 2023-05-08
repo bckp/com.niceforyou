@@ -25,7 +25,7 @@ const OBSTACLE_SOURCE = {
 class BusT4Device extends ZwaveDevice {
     _setDelayed = false;
 
-    async onMeshInit() {
+    async onNodeInit({}) {
         this.log('BusT4Device has been initialized');
         this.enableDebug();
 
@@ -34,24 +34,36 @@ class BusT4Device extends ZwaveDevice {
             setParserV4: this._gateSetParser.bind(this),
             reportParser: this._gateReportParser.bind(this),
             reportParserOverride: true,
+            getOnStart: true,
         });
 
         // Notification listener
-        this.registerReportListener('NOTIFICATION', 'NOTIFICATION_REPORT', report => {
-            this.log('Notification received', report);
+        this.registerReportListener('NOTIFICATION', 'NOTIFICATION_REPORT', this.onNotificationReport.bind(this));
 
-            if (report && report.hasOwnProperty('Event') && Object.keys(OBSTACLE_SOURCE).includes(report.Event.toString())) {
-                this.setNotification(OBSTACLE_SOURCE[report.Event]);
-            }
-        });
+        // And conditions
+        this.registerConditionCards(this.driver);
 
         // Set capabilities from current state
         this.setNotification(null, true);
+    }
 
-        // Refresh state, so we know what we are up to
-        this.refreshCapabilityValue('onoff', 'SWITCH_MULTILEVEL').catch(
-            err => this.log('Refresh ON/OFF failed', err)
-        );
+    registerConditionCards(driver) {
+        driver.conditionGateIsClosing.registerRunListener(async () => this.getCapabilityValue('state') === STATE_CLOSING);
+        driver.conditionGateIsOpening.registerRunListener(async () => this.getCapabilityValue('state') === STATE_OPENING);
+        driver.conditionGateIsClosed.registerRunListener(async () => this.getCapabilityValue('state') === STATE_CLOSED);
+        driver.conditionGateIsOpen.registerRunListener(async () => this.getCapabilityValue('state') === STATE_OPEN);
+    }
+
+    async onNotificationReport(report) {
+        this.log('Notification received', report);
+
+        if (report && report.hasOwnProperty('Event') && Object.keys(OBSTACLE_SOURCE).includes(report.Event.toString())) {
+            this.setNotification(OBSTACLE_SOURCE[report.Event]);
+        }
+    }
+
+    isState(state) {
+        return this.getCapabilityValue('state') === state;
     }
 
     /**

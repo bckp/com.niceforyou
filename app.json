@@ -40,44 +40,7 @@
   },
   "source": "https://github.com/bckp/com.niceforyou",
   "flow": {
-    "conditions": [
-      {
-        "title": {
-          "en": "Gate is closing"
-        },
-        "titleFormatted": {
-          "en": "Gate is closing"
-        },
-        "hint": {
-          "en": "Check if gate is in process of closing."
-        },
-        "id": "gate-is-closing"
-      }
-    ],
     "triggers": [
-      {
-        "id": "bus_t4_state_changed",
-        "title": {
-          "en": "State changed"
-        },
-        "tokens": [
-          {
-            "name": "state",
-            "type": "string",
-            "title": {
-              "en": "State"
-            },
-            "example": "closed"
-          }
-        ],
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=bus-t4-z-wave-interface"
-          }
-        ]
-      },
       {
         "id": "bus_t4_notification_received",
         "title": {
@@ -92,14 +55,58 @@
             },
             "example": "beam"
           }
-        ],
-        "args": [
+        ]
+      },
+      {
+        "id": "bus_t4_state_changed",
+        "title": {
+          "en": "State changed"
+        },
+        "tokens": [
           {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=bus-t4-z-wave-interface"
+            "name": "state",
+            "type": "string",
+            "title": {
+              "en": "State"
+            },
+            "example": "closed"
           }
         ]
+      }
+    ],
+    "conditions": [
+      {
+        "title": {
+          "en": "Gate is closed"
+        },
+        "id": "gate-is-closed"
+      },
+      {
+        "title": {
+          "en": "Gate is closing"
+        },
+        "titleFormatted": {
+          "en": "Gate is closing"
+        },
+        "id": "gate-is-closing"
+      },
+      {
+        "title": {
+          "en": "Gate is open"
+        },
+        "hint": {
+          "en": "Check if gate is in process of closing."
+        },
+        "id": "gate-is-open"
+      },
+      {
+        "title": {
+          "en": "Gate is opening"
+        },
+        "titleFormatted": {
+          "en": "Gate is opening"
+        },
+        "id": "gate-is-opening"
       }
     ]
   },

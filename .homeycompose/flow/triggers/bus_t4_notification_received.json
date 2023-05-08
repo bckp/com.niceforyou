@@ -1,0 +1,16 @@
+{
+    "id": "bus_t4_notification_received",
+    "title": {
+        "en": "Notification received"
+    },
+    "tokens": [
+        {
+            "name": "notification",
+            "type": "string",
+            "title": {
+                "en": "Notification"
+            },
+            "example": "beam"
+        }
+    ]
+}

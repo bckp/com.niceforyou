@@ -7,8 +7,15 @@ class BusT4Driver extends Homey.Driver {
   onInit() {
     super.onInit();
 
+    // Triggers
     this.stateChangedTrigger = this.homey.flow.getDeviceTriggerCard('bus_t4_state_changed');
     this.notificationReceivedTrigger = this.homey.flow.getDeviceTriggerCard('bus_t4_notification_received');
+
+    // Conditions
+    this.conditionGateIsClosing = this.homey.flow.getConditionCard('gate-is-closing');
+    this.conditionGateIsOpening = this.homey.flow.getConditionCard('gate-is-opening');
+    this.conditionGateIsOpen = this.homey.flow.getConditionCard('gate-is-open');
+    this.conditionGateIsClosed = this.homey.flow.getConditionCard('gate-is-closed');
   }
 }
 

@@ -1,0 +1,16 @@
+{
+    "id": "bus_t4_state_changed",
+    "title": {
+        "en": "State changed"
+    },
+    "tokens": [
+        {
+            "name": "state",
+            "type": "string",
+            "title": {
+                "en": "State"
+            },
+            "example": "closed"
+        }
+    ]
+}
