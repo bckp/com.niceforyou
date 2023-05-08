@@ -79,6 +79,9 @@
         "title": {
           "en": "Gate is closed"
         },
+        "titleFormatted": {
+          "en": "Gate is closed"
+        },
         "id": "gate-is-closed"
       },
       {
@@ -94,8 +97,8 @@
         "title": {
           "en": "Gate is open"
         },
-        "hint": {
-          "en": "Check if gate is in process of closing."
+        "titleFormatted": {
+          "en": "Gate is open"
         },
         "id": "gate-is-open"
       },
