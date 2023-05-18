@@ -1,0 +1,47 @@
+{
+  "title": {
+    "en": "Gate !{{is|isn't}} …"
+  },
+  "titleFormatted": {
+    "en": "Gate !{{is|isn't}} [[state]]"
+  },
+  "args": [
+    {
+      "type": "dropdown",
+      "name": "state",
+      "title": { "en": "State to verify" },
+      "values": [
+        {
+          "id": "open",
+          "title": {
+            "en": "open"
+          }
+        },
+        {
+          "id": "opening",
+          "title": {
+            "en": "opening"
+          }
+        },
+        {
+          "id": "stopped",
+          "title": {
+            "en": "stopped"
+          }
+        },
+        {
+          "id": "closing",
+          "title": {
+            "en": "closing"
+          }
+        },
+        {
+          "id": "closed",
+          "title": {
+            "en": "closed"
+          }
+        }
+      ]
+    }
+  ]
+}

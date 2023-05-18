@@ -42,17 +42,17 @@ class BusT4Device extends ZwaveDevice {
       this.registerReportListener('NOTIFICATION', 'NOTIFICATION_REPORT', this.onNotificationReport.bind(this));
 
       // And conditions
-      this.registerConditionCards(this.driver);
+      this.driver.conditionGateIs.registerRunListener(async ({ state }) => this.getCapabilityValue('state') === state);
+      this.driver.conditionGateIsBlocked.registerRunListener(async () => this.getCapabilityValue('notification') !== null);
+
+      // Deprecated cards
+      this.driver.conditionGateIsClosing.registerRunListener(async () => this.getCapabilityValue('state') === STATE_CLOSING); // deprecated
+      this.driver.conditionGateIsOpening.registerRunListener(async () => this.getCapabilityValue('state') === STATE_OPENING); // deprecated
+      this.driver.conditionGateIsClosed.registerRunListener(async () => this.getCapabilityValue('state') === STATE_CLOSED); // deprecated
+      this.driver.conditionGateIsOpen.registerRunListener(async () => this.getCapabilityValue('state') === STATE_OPEN); // deprecated
 
       // Set capabilities from current state
       this.setNotification(null, true);
-    }
-
-    registerConditionCards(driver) {
-      driver.conditionGateIsClosing.registerRunListener(async () => this.getCapabilityValue('state') === STATE_CLOSING);
-      driver.conditionGateIsOpening.registerRunListener(async () => this.getCapabilityValue('state') === STATE_OPENING);
-      driver.conditionGateIsClosed.registerRunListener(async () => this.getCapabilityValue('state') === STATE_CLOSED);
-      driver.conditionGateIsOpen.registerRunListener(async () => this.getCapabilityValue('state') === STATE_OPEN);
     }
 
     async onNotificationReport(report) {
@@ -79,14 +79,14 @@ class BusT4Device extends ZwaveDevice {
         return;
       }
 
-      this.setCapabilityValue('state', state).catch(
-        (err) => this.log('Could not set capability value for state', err),
-      );
-
       // Reset notification on closed (closing is passed wrongly sometimes)
       if (STATE_CLOSED === state) {
         this.setNotification(null);
       }
+
+      this.setCapabilityValue('state', state).catch(
+        (err) => this.log('Could not set capability value for state', err),
+      );
 
       // If no silent mode for init, trigger
       if (!silent) {

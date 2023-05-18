@@ -77,11 +77,71 @@
     "conditions": [
       {
         "title": {
+          "en": "Gate !{{is|isn't}} …"
+        },
+        "titleFormatted": {
+          "en": "Gate !{{is|isn't}} [[state]]"
+        },
+        "args": [
+          {
+            "type": "dropdown",
+            "name": "state",
+            "title": {
+              "en": "State to verify"
+            },
+            "values": [
+              {
+                "id": "open",
+                "title": {
+                  "en": "open"
+                }
+              },
+              {
+                "id": "opening",
+                "title": {
+                  "en": "opening"
+                }
+              },
+              {
+                "id": "stopped",
+                "title": {
+                  "en": "stopped"
+                }
+              },
+              {
+                "id": "closing",
+                "title": {
+                  "en": "closing"
+                }
+              },
+              {
+                "id": "closed",
+                "title": {
+                  "en": "closed"
+                }
+              }
+            ]
+          }
+        ],
+        "id": "gate-is"
+      },
+      {
+        "title": {
+          "en": "Gate !{{is|isn't}} blocked"
+        },
+        "titleFormatted": {
+          "en": "Gate !{{is|isn't}} blocked"
+        },
+        "id": "gate-is-blocked"
+      },
+      {
+        "title": {
           "en": "Gate is closed"
         },
         "titleFormatted": {
           "en": "Gate is closed"
         },
+        "deprecated": true,
         "id": "gate-is-closed"
       },
       {
@@ -91,6 +151,7 @@
         "titleFormatted": {
           "en": "Gate is closing"
         },
+        "deprecated": true,
         "id": "gate-is-closing"
       },
       {
@@ -100,6 +161,7 @@
         "titleFormatted": {
           "en": "Gate is open"
         },
+        "deprecated": true,
         "id": "gate-is-open"
       },
       {
@@ -109,6 +171,7 @@
         "titleFormatted": {
           "en": "Gate is opening"
         },
+        "deprecated": true,
         "id": "gate-is-opening"
       }
     ]
