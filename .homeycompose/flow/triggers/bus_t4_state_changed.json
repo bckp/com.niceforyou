@@ -12,5 +12,12 @@
             },
             "example": "closed"
         }
+    ],
+    "args": [
+        {
+          "type": "device",
+          "name": "device",
+          "filter": "driver_id=bus-t4-z-wave-interface"
+        }
     ]
 }

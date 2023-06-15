@@ -55,6 +55,13 @@
             },
             "example": "beam"
           }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=bus-t4-z-wave-interface"
+          }
         ]
       },
       {
@@ -70,6 +77,13 @@
               "en": "State"
             },
             "example": "closed"
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=bus-t4-z-wave-interface"
           }
         ]
       }
@@ -121,6 +135,11 @@
                 }
               }
             ]
+          },
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=bus-t4-z-wave-interface"
           }
         ],
         "id": "gate-is"
@@ -132,6 +151,13 @@
         "titleFormatted": {
           "en": "Gate !{{is|isn't}} blocked"
         },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=bus-t4-z-wave-interface"
+          }
+        ],
         "id": "gate-is-blocked"
       },
       {
@@ -141,6 +167,13 @@
         "titleFormatted": {
           "en": "Gate is closed"
         },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=bus-t4-z-wave-interface"
+          }
+        ],
         "deprecated": true,
         "id": "gate-is-closed"
       },
@@ -151,6 +184,13 @@
         "titleFormatted": {
           "en": "Gate is closing"
         },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=bus-t4-z-wave-interface"
+          }
+        ],
         "deprecated": true,
         "id": "gate-is-closing"
       },
@@ -161,6 +201,13 @@
         "titleFormatted": {
           "en": "Gate is open"
         },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=bus-t4-z-wave-interface"
+          }
+        ],
         "deprecated": true,
         "id": "gate-is-open"
       },
@@ -171,6 +218,13 @@
         "titleFormatted": {
           "en": "Gate is opening"
         },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=bus-t4-z-wave-interface"
+          }
+        ],
         "deprecated": true,
         "id": "gate-is-opening"
       }

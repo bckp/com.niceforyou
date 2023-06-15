@@ -5,5 +5,12 @@
   "titleFormatted": {
     "en": "Gate is closed"
   },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=bus-t4-z-wave-interface"
+    }
+  ],
   "deprecated": true
 }
