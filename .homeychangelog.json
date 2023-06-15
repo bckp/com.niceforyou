@@ -37,5 +37,8 @@
   },
   "1.4.1": {
     "en": "Fixed when cards not working"
+  },
+  "1.4.2": {
+    "en": "Added better timer for app opening/closing states"
   }
 }
