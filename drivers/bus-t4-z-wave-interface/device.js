@@ -24,7 +24,8 @@ const OBSTACLE_SOURCE = {
 
 class BusT4Device extends ZwaveDevice {
 
-    _setDelayed = false;
+    _elapsed = null;
+    _timer = null;
 
     async onNodeInit({ node }) {
       this.log('BusT4Device has been initialized');
@@ -69,10 +70,8 @@ class BusT4Device extends ZwaveDevice {
      * @param {boolean} silent
      */
     setState(state, silent = false) {
-      // Reset delayed change, if any
-      if (this._setDelayed) {
-        this._setDelayed = false;
-      }
+      // Clear timer if set
+      this._clearTimerState();
 
       // State is same, as what we want set
       if (this.getCapabilityValue('state') === state) {
@@ -126,7 +125,7 @@ class BusT4Device extends ZwaveDevice {
      * @private
      */
     _gateSetParser(value) {
-      this.log('Set parser', value);
+      this.log('Set parser:', value);
 
       const state = this.getCapabilityValue('state');
       if (
@@ -135,10 +134,9 @@ class BusT4Device extends ZwaveDevice {
       ) {
         // set state, enable delayed state change
         this.setState(value ? STATE_OPENING : STATE_CLOSING);
-        this._setDelayed = true;
 
         // set timeout by user setting value, to change state again
-        setTimeout(() => this._setDelayedState(value ? STATE_OPEN : STATE_CLOSED), this.getSetting('gate_state_timeout') || 10000);
+        this._setTimerState(value ? STATE_OPEN : STATE_CLOSED);
       }
 
       return {
@@ -153,12 +151,38 @@ class BusT4Device extends ZwaveDevice {
      * @private
      */
     _setDelayedState(state) {
-      if (!this._setDelayed) {
-        this.log('State already changed, skipping...');
-        return;
-      }
+      this._clearTimerState();
+      this._clearTimerElapsed();
 
       this.setState(state);
+    }
+
+    _setTimerState(state) {
+      this._clearTimerState();
+      const time = this._getTimerTime();
+
+      this.log('Set timer for: ', time);
+      this._timer = setTimeout(() => this._setDelayedState(state), time);
+      this._elapsed = new Date().getTime();
+    }
+
+    _getTimerTime() {
+      if (this._elapsed) {
+        return Math.min((new Date().getTime() + 1000) - this._elapsed, this.getSetting('gate_state_timeout') || 10000);
+      }
+      return this.getSetting('gate_state_timeout') || 10000;
+    }
+
+    _clearTimerState(clearElapsed = false) {
+      if (this._timer) {
+        this.log(`Clear timer id: ${this._timer}`);
+        clearInterval(this._timer);
+      }
+      this._timer = null;
+    }
+
+    _clearTimerElapsed() {
+      this._elapsed = null;
     }
 
     /**
