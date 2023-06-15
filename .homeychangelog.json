@@ -34,5 +34,8 @@
   },
   "1.4.0": {
     "en": "Added new condition cards"
+  },
+  "1.4.1": {
+    "en": "Fixed when cards not working"
   }
 }
