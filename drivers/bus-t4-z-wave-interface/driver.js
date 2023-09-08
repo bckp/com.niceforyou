@@ -14,12 +14,6 @@ class BusT4Driver extends Homey.Driver {
     // Conditions
     this.conditionGateIs = this.homey.flow.getConditionCard('gate-is');
     this.conditionGateIsBlocked = this.homey.flow.getConditionCard('gate-is-blocked');
-
-    // Conditions - deprecated
-    this.conditionGateIsClosing = this.homey.flow.getConditionCard('gate-is-closing');
-    this.conditionGateIsOpening = this.homey.flow.getConditionCard('gate-is-opening');
-    this.conditionGateIsOpen = this.homey.flow.getConditionCard('gate-is-open');
-    this.conditionGateIsClosed = this.homey.flow.getConditionCard('gate-is-closed');
   }
 
 }

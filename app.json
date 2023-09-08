@@ -159,74 +159,6 @@
           }
         ],
         "id": "gate-is-blocked"
-      },
-      {
-        "title": {
-          "en": "Gate is closed"
-        },
-        "titleFormatted": {
-          "en": "Gate is closed"
-        },
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=bus-t4-z-wave-interface"
-          }
-        ],
-        "deprecated": true,
-        "id": "gate-is-closed"
-      },
-      {
-        "title": {
-          "en": "Gate is closing"
-        },
-        "titleFormatted": {
-          "en": "Gate is closing"
-        },
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=bus-t4-z-wave-interface"
-          }
-        ],
-        "deprecated": true,
-        "id": "gate-is-closing"
-      },
-      {
-        "title": {
-          "en": "Gate is open"
-        },
-        "titleFormatted": {
-          "en": "Gate is open"
-        },
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=bus-t4-z-wave-interface"
-          }
-        ],
-        "deprecated": true,
-        "id": "gate-is-open"
-      },
-      {
-        "title": {
-          "en": "Gate is opening"
-        },
-        "titleFormatted": {
-          "en": "Gate is opening"
-        },
-        "args": [
-          {
-            "type": "device",
-            "name": "device",
-            "filter": "driver_id=bus-t4-z-wave-interface"
-          }
-        ],
-        "deprecated": true,
-        "id": "gate-is-opening"
       }
     ]
   },
@@ -236,12 +168,23 @@
       "name": {
         "en": "Bus T4 Z-Wave interface"
       },
-      "class": "other",
+      "class": "garagedoor",
       "capabilities": [
-        "onoff",
+        "garagedoor_closed",
         "state",
-        "notification"
+        "notification",
+        "alarm_generic"
       ],
+      "capabilitiesOptions": {
+        "state": {
+          "preventInsights": true,
+          "preventTag": false
+        },
+        "notification": {
+          "preventInsights": true,
+          "preventTag": false
+        }
+      },
       "images": {
         "large": "/drivers/bus-t4-z-wave-interface/assets/images/large.png",
         "small": "/drivers/bus-t4-z-wave-interface/assets/images/small.png"

@@ -31,13 +31,21 @@ class BusT4Device extends ZwaveDevice {
       this.log('BusT4Device has been initialized');
       this.enableDebug();
 
-      // Open/close the gate
-      this.registerCapability('onoff', 'SWITCH_MULTILEVEL', {
-        setParserV4: this._gateSetParser.bind(this),
-        reportParser: this._gateReportParser.bind(this),
+      this.initMigration();
+
+      // Capabilities
+      this.registerCapability('garagedoor_closed', 'SWITCH_MULTILEVEL', {
+        get: 'SWITCH_MULTILEVEL_GET',
+        set: 'SWITCH_MULTILEVEL_SET',
+        report: 'SWITCH_MULTILEVEL_REPORT',
         reportParserOverride: true,
         getOnStart: true,
+        setParser: this._gateSetParser.bind(this),
+        reportParser: this._gateReportParser.bind(this),
       });
+
+      // Refresh state
+      this.refreshCapabilityValue('garagedoor_closed', 'SWITCH_MULTILEVEL');
 
       // Notification listener
       this.registerReportListener('NOTIFICATION', 'NOTIFICATION_REPORT', this.onNotificationReport.bind(this));
@@ -46,14 +54,30 @@ class BusT4Device extends ZwaveDevice {
       this.driver.conditionGateIs.registerRunListener(async ({ state }) => this.getCapabilityValue('state') === state);
       this.driver.conditionGateIsBlocked.registerRunListener(async () => this.getCapabilityValue('notification') !== null);
 
-      // Deprecated cards
-      this.driver.conditionGateIsClosing.registerRunListener(async () => this.getCapabilityValue('state') === STATE_CLOSING); // deprecated
-      this.driver.conditionGateIsOpening.registerRunListener(async () => this.getCapabilityValue('state') === STATE_OPENING); // deprecated
-      this.driver.conditionGateIsClosed.registerRunListener(async () => this.getCapabilityValue('state') === STATE_CLOSED); // deprecated
-      this.driver.conditionGateIsOpen.registerRunListener(async () => this.getCapabilityValue('state') === STATE_OPEN); // deprecated
-
       // Set capabilities from current state
       this.setNotification(null, true);
+    }
+
+    async initMigration() {
+      // Check if already migrated
+      if (this.getClass() === 'garagedoor') {
+        return;
+      }
+
+      // Set class
+      this.log(`Changing class on ${this.getName()} from ${this.getClass()} to garagedoor`);
+      this.setClass('garagedoor');
+
+      // Capabilities
+      if (!this.hasCapability('alarm_generic')) {
+        this.addCapability('alarm_generic');
+      }
+      if (!this.hasCapability('garagedoor_closed')) {
+        this.addCapability('garagedoor_closed');
+      }
+      if (this.hasCapability('onoff')) {
+        this.removeCapability('onoff');
+      }
     }
 
     async onNotificationReport(report) {
@@ -101,14 +125,19 @@ class BusT4Device extends ZwaveDevice {
      * @param {boolean} silent
      */
     setNotification(notification, silent = false) {
-      // Notification is already there
-      if (this.getCapabilityValue('notification') === notification) {
-        return;
-      }
+      const currentValue = this.getCapabilityValue('notification');
 
       this.setCapabilityValue('notification', notification).catch(
         (err) => this.log('Could not set capability value for notification', err),
       );
+      this.setCapabilityValue('alarm_generic', notification !== null).catch(
+        (err) => this.log('Could not set capability value for alarm_generic', err),
+      );
+
+      // Notification is already there
+      if (currentValue === notification) {
+        return;
+      }
 
       // If notification is set, and no silent mode for init, trigger
       if (notification !== null && !silent) {
@@ -140,7 +169,7 @@ class BusT4Device extends ZwaveDevice {
       }
 
       return {
-        Value: value ? 'on/enable' : 'off/disable',
+        Value: value ? 'off/disable' : 'on/enable',
         'Dimming Duration': 'Default',
       };
     }
@@ -162,7 +191,7 @@ class BusT4Device extends ZwaveDevice {
       const time = this._getTimerTime();
 
       this.log('Set timer for: ', time);
-      this._timer = setTimeout(() => this._setDelayedState(state), time);
+      this._timer = this.homey.setTimeout(() => this._setDelayedState(state), time);
       this._elapsed = new Date().getTime();
     }
 
@@ -173,10 +202,10 @@ class BusT4Device extends ZwaveDevice {
       return this.getSetting('gate_state_timeout') || 10000;
     }
 
-    _clearTimerState(clearElapsed = false) {
+    _clearTimerState() {
       if (this._timer) {
         this.log(`Clear timer id: ${this._timer}`);
-        clearInterval(this._timer);
+        this.homey.clearTimeout(this._timer);
       }
       this._timer = null;
     }
@@ -211,10 +240,10 @@ class BusT4Device extends ZwaveDevice {
         this.setState(stateText);
 
         // STATE_CLOSED || STATE_CLOSING
-        return stateCode !== 0 && stateCode !== 254;
+        return stateCode === 0 || stateCode === 254;
       }
 
-      return this.getCapabilityValue('onoff');
+      return null;
     }
 
 }
