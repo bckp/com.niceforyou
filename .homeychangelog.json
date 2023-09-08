@@ -40,5 +40,8 @@
   },
   "1.4.2": {
     "en": "Added better timer for app opening/closing states"
+  },
+  "2.0.0": {
+    "en": "Switched from other device class to garagedoor, so few BC breaks, but Google Home and Homekit should benefit from this greatly"
   }
 }
