@@ -18,6 +18,15 @@
     "notification": {
       "preventInsights": true,
       "preventTag": false
+    },
+    "alarm_generic": {
+      "preventInsights": true,
+      "titleTrue": {
+        "en": "Obstacle detected"
+      },
+      "titleFalse": {
+        "en": "No obstacle detected"
+      }
     }
   },
   "images": {
