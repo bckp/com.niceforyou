@@ -183,6 +183,18 @@
         "notification": {
           "preventInsights": true,
           "preventTag": false
+        },
+        "alarm_generic": {
+          "preventInsights": true,
+          "title": {
+            "en": "Obstacle"
+          },
+          "titleTrue": {
+            "en": "Detected"
+          },
+          "titleFalse": {
+            "en": "OK"
+          }
         }
       },
       "images": {

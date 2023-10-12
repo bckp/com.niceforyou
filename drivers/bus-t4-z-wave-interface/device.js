@@ -45,7 +45,9 @@ class BusT4Device extends ZwaveDevice {
       });
 
       // Refresh state
-      this.refreshCapabilityValue('garagedoor_closed', 'SWITCH_MULTILEVEL');
+      this.refreshCapabilityValue('garagedoor_closed', 'SWITCH_MULTILEVEL').catch(
+        (err) => this.log('Could not refresh capability value', err),
+      );
 
       // Notification listener
       this.registerReportListener('NOTIFICATION', 'NOTIFICATION_REPORT', this.onNotificationReport.bind(this));

@@ -21,11 +21,14 @@
     },
     "alarm_generic": {
       "preventInsights": true,
+      "title": {
+        "en": "Obstacle"
+      },
       "titleTrue": {
-        "en": "Obstacle detected"
+        "en": "Detected"
       },
       "titleFalse": {
-        "en": "No obstacle detected"
+        "en": "OK"
       }
     }
   },
