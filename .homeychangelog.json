@@ -46,5 +46,8 @@
   },
   "2.0.1": {
     "en": "Minimal version fix, BC breaks from version <2"
+  },
+  "2.0.2": {
+    "en": "Updated texts"
   }
 }
