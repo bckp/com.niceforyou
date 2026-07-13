@@ -1,37 +1,31 @@
 'use strict';
 
 const { ZwaveDevice } = require('homey-zwavedriver');
+const {
+  GATE_STATES,
+  decodeGateStateReport,
+  decodeNotificationReport,
+} = require('../../lib/nice-protocol');
 
-const STATE_OPEN = 'open';
-const STATE_CLOSED = 'closed';
-const STATE_OPENING = 'opening';
-const STATE_CLOSING = 'closing';
-const STATE_STOPPED = 'stopped';
-
-const GATE_STATE = {
-  0: STATE_CLOSED,
-  198: STATE_OPEN,
-  254: STATE_CLOSING,
-  353: STATE_OPENING,
-  508: STATE_STOPPED,
-};
-
-const OBSTACLE_SOURCE = {
-  71: 'engine',
-  72: 'beam',
-  76: 'external',
-};
+const STATE_OPEN = GATE_STATES.OPEN;
+const STATE_CLOSED = GATE_STATES.CLOSED;
+const STATE_OPENING = GATE_STATES.OPENING;
+const STATE_CLOSING = GATE_STATES.CLOSING;
+const STATE_STOPPED = GATE_STATES.STOPPED;
 
 class BusT4Device extends ZwaveDevice {
 
-    _elapsed = null;
+    _movementStartedAt = null;
+    _notificationUpdateQueue = Promise.resolve();
+    _stateUpdateQueue = Promise.resolve();
     _timer = null;
+    _timerTargetState = null;
 
     async onNodeInit({ node }) {
       this.log('BusT4Device has been initialized');
       this.enableDebug();
 
-      this.initMigration();
+      await this.initMigration();
 
       // Capabilities
       this.registerCapability('garagedoor_closed', 'SWITCH_MULTILEVEL', {
@@ -40,9 +34,17 @@ class BusT4Device extends ZwaveDevice {
         report: 'SWITCH_MULTILEVEL_REPORT',
         reportParserOverride: true,
         getOnStart: true,
+        fn: (isClosed) => {
+          this._syncLegacyOnOff(isClosed).catch(
+            (err) => this.error('Could not synchronize legacy onoff capability', err),
+          );
+        },
         setParser: this._gateSetParser.bind(this),
         reportParser: this._gateReportParser.bind(this),
       });
+
+      // Keep onoff working only on v1 devices that still carry the capability.
+      this._registerLegacyOnOffCapability();
 
       // Refresh state
       this.refreshCapabilityValue('garagedoor_closed', 'SWITCH_MULTILEVEL').catch(
@@ -52,41 +54,35 @@ class BusT4Device extends ZwaveDevice {
       // Notification listener
       this.registerReportListener('NOTIFICATION', 'NOTIFICATION_REPORT', this.onNotificationReport.bind(this));
 
-      // And conditions
-      this.driver.conditionGateIs.registerRunListener(async ({ state }) => this.getCapabilityValue('state') === state);
-      this.driver.conditionGateIsBlocked.registerRunListener(async () => this.getCapabilityValue('notification') !== null);
-
-      // Set capabilities from current state
-      this.setNotification(null, true);
+      // Keep the persisted active alarm synchronized with alarm_generic.
+      await this.setNotification(this.getCapabilityValue('notification'), true);
     }
 
     async initMigration() {
-      // Check if already migrated
-      if (this.getClass() === 'garagedoor') {
-        return;
+      if (this.getClass() !== 'garagedoor') {
+        this.log(`Changing class on ${this.getName()} from ${this.getClass()} to garagedoor`);
+        await this.setClass('garagedoor');
       }
-
-      // Set class
-      this.log(`Changing class on ${this.getName()} from ${this.getClass()} to garagedoor`);
-      this.setClass('garagedoor');
 
       // Capabilities
       if (!this.hasCapability('alarm_generic')) {
-        this.addCapability('alarm_generic');
+        await this.addCapability('alarm_generic');
       }
       if (!this.hasCapability('garagedoor_closed')) {
-        this.addCapability('garagedoor_closed');
-      }
-      if (this.hasCapability('onoff')) {
-        this.removeCapability('onoff');
+        await this.addCapability('garagedoor_closed');
       }
     }
 
     async onNotificationReport(report) {
       this.log('Notification received', report);
 
-      if (report && Object.prototype.hasOwnProperty.call(report, 'Event') && Object.keys(OBSTACLE_SOURCE).includes(report.Event.toString())) {
-        this.setNotification(OBSTACLE_SOURCE[report.Event]);
+      const notification = decodeNotificationReport(report);
+      if (notification !== undefined) {
+        try {
+          await this.setNotification(notification);
+        } catch (err) {
+          this.error('Could not process notification report', err);
+        }
       }
     }
 
@@ -96,9 +92,14 @@ class BusT4Device extends ZwaveDevice {
      * @param {boolean} silent
      */
     setState(state, silent = false) {
-      // Clear timer if set
-      this._clearTimerState();
+      const operation = this._stateUpdateQueue.then(
+        () => this._applyState(state, silent),
+      );
+      this._stateUpdateQueue = operation.catch(() => {});
+      return operation;
+    }
 
+    async _applyState(state, silent) {
       // State is same, as what we want set
       if (this.getCapabilityValue('state') === state) {
         return;
@@ -106,18 +107,14 @@ class BusT4Device extends ZwaveDevice {
 
       // Reset notification on closed (closing is passed wrongly sometimes)
       if (STATE_CLOSED === state) {
-        this.setNotification(null);
+        await this.setNotification(null);
       }
 
-      this.setCapabilityValue('state', state).catch(
-        (err) => this.log('Could not set capability value for state', err),
-      );
+      await this.setCapabilityValue('state', state);
 
       // If no silent mode for init, trigger
       if (!silent) {
-        this.driver.stateChangedTrigger.trigger(this, { state }).catch(
-          (err) => this.log('Failed to trigger notificationReceivedTrigger', err),
-        );
+        await this.driver.stateChangedTrigger.trigger(this, { state });
       }
     }
 
@@ -127,14 +124,20 @@ class BusT4Device extends ZwaveDevice {
      * @param {boolean} silent
      */
     setNotification(notification, silent = false) {
+      const operation = this._notificationUpdateQueue.then(
+        () => this._applyNotification(notification, silent),
+      );
+      this._notificationUpdateQueue = operation.catch(() => {});
+      return operation;
+    }
+
+    async _applyNotification(notification, silent) {
       const currentValue = this.getCapabilityValue('notification');
 
-      this.setCapabilityValue('notification', notification).catch(
-        (err) => this.log('Could not set capability value for notification', err),
-      );
-      this.setCapabilityValue('alarm_generic', notification !== null).catch(
-        (err) => this.log('Could not set capability value for alarm_generic', err),
-      );
+      await Promise.all([
+        this.setCapabilityValue('notification', notification),
+        this.setCapabilityValue('alarm_generic', notification !== null),
+      ]);
 
       // Notification is already there
       if (currentValue === notification) {
@@ -143,10 +146,34 @@ class BusT4Device extends ZwaveDevice {
 
       // If notification is set, and no silent mode for init, trigger
       if (notification !== null && !silent) {
-        this.driver.notificationReceivedTrigger.trigger(this, { notification }).catch(
-          (err) => this.log('Failed to trigger notificationReceivedTrigger', err),
-        );
+        await this.driver.notificationReceivedTrigger.trigger(this, { notification });
       }
+    }
+
+    _registerLegacyOnOffCapability() {
+      if (!this.hasCapability('onoff')) {
+        return;
+      }
+
+      this.registerCapabilityListener('onoff', async (isOpen, opts) => {
+        const isClosed = !isOpen;
+
+        await this.triggerCapabilityListener('garagedoor_closed', isClosed, opts);
+        await this.setCapabilityValue('garagedoor_closed', isClosed);
+        await this._syncLegacyOnOff(isClosed);
+      });
+    }
+
+    async _syncLegacyOnOff(isClosed) {
+      if (
+        typeof isClosed !== 'boolean'
+        || !this.hasCapability('onoff')
+        || this.getCapabilityValue('onoff') === !isClosed
+      ) {
+        return;
+      }
+
+      await this.setCapabilityValue('onoff', !isClosed);
     }
 
     /**
@@ -164,7 +191,9 @@ class BusT4Device extends ZwaveDevice {
             || (!value && state !== STATE_CLOSED)
       ) {
         // set state, enable delayed state change
-        this.setState(value ? STATE_OPENING : STATE_CLOSING);
+        this.setState(value ? STATE_OPENING : STATE_CLOSING).catch(
+          (err) => this.error('Could not set commanded gate state', err),
+        );
 
         // set timeout by user setting value, to change state again
         this._setTimerState(value ? STATE_OPEN : STATE_CLOSED);
@@ -181,11 +210,10 @@ class BusT4Device extends ZwaveDevice {
      * @param state
      * @private
      */
-    _setDelayedState(state) {
-      this._clearTimerState();
-      this._clearTimerElapsed();
+    async _setDelayedState(state) {
+      this._clearMovementTiming();
 
-      this.setState(state);
+      await this.setState(state);
     }
 
     _setTimerState(state) {
@@ -193,13 +221,18 @@ class BusT4Device extends ZwaveDevice {
       const time = this._getTimerTime();
 
       this.log('Set timer for: ', time);
-      this._timer = this.homey.setTimeout(() => this._setDelayedState(state), time);
-      this._elapsed = new Date().getTime();
+      this._timerTargetState = state;
+      this._timer = this.homey.setTimeout(() => {
+        this._setDelayedState(state).catch(
+          (err) => this.error('Could not set delayed gate state', err),
+        );
+      }, time);
+      this._movementStartedAt = Date.now();
     }
 
     _getTimerTime() {
-      if (this._elapsed) {
-        return Math.min((new Date().getTime() + 1000) - this._elapsed, this.getSetting('gate_state_timeout') || 10000);
+      if (this._movementStartedAt) {
+        return Math.min((Date.now() + 1000) - this._movementStartedAt, this.getSetting('gate_state_timeout') || 10000);
       }
       return this.getSetting('gate_state_timeout') || 10000;
     }
@@ -210,10 +243,12 @@ class BusT4Device extends ZwaveDevice {
         this.homey.clearTimeout(this._timer);
       }
       this._timer = null;
+      this._timerTargetState = null;
     }
 
-    _clearTimerElapsed() {
-      this._elapsed = null;
+    _clearMovementTiming() {
+      this._clearTimerState();
+      this._movementStartedAt = null;
     }
 
     /**
@@ -224,28 +259,42 @@ class BusT4Device extends ZwaveDevice {
     _gateReportParser(report) {
       this.log('Gate report received', report);
 
-      if (report
-            && Object.prototype.hasOwnProperty.call(report, 'Current Value (Raw)')
-            && Object.prototype.hasOwnProperty.call(report, 'Target Value (Raw)')
-      ) {
-        // Read value from RAW (parsed is wrong time to time)
-        const currentValue = report['Current Value (Raw)'].readUInt8();
-        const targetValue = report['Target Value (Raw)'].readUInt8();
-
-        // Calculate stateCode and stateText
-        const stateCode = currentValue + targetValue;
-        const stateText = GATE_STATE[stateCode];
-
-        this.log(`Gate status ${stateCode}, parsed: ${stateText}`);
-
-        // Change state only if real change occur
-        this.setState(stateText);
-
-        // STATE_CLOSED || STATE_CLOSING
-        return stateCode === 0 || stateCode === 254;
+      const decoded = decodeGateStateReport(report);
+      if (!decoded) {
+        return null;
       }
 
-      return null;
+      const {
+        currentValue, state: stateText, stateCode, targetValue,
+      } = decoded;
+      if (!stateText) {
+        this.log(`Unknown gate status ${stateCode} (current: ${currentValue}, target: ${targetValue})`);
+        return null;
+      }
+
+      this.log(`Gate status ${stateCode}, parsed: ${stateText}`);
+
+      const expectedMovementState = this._timerTargetState === STATE_OPEN
+        ? STATE_OPENING
+        : STATE_CLOSING;
+      if (stateText === STATE_OPEN || stateText === STATE_CLOSED) {
+        this._clearMovementTiming();
+      } else if (stateText === STATE_STOPPED) {
+        this._clearTimerState();
+      } else if (this._timer && stateText !== expectedMovementState) {
+        this._clearTimerState();
+      }
+
+      this.setState(stateText).catch(
+        (err) => this.error('Could not set reported gate state', err),
+      );
+
+      return stateText === STATE_CLOSED || stateText === STATE_CLOSING;
+    }
+
+    onDeleted() {
+      this._clearMovementTiming();
+      return super.onDeleted();
     }
 
 }

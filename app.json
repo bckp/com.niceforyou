@@ -246,7 +246,7 @@
         },
         {
           "id": "30",
-          "value": "0",
+          "value": 0,
           "label": {
             "en": "Alarm configuration - 1st slot"
           },
@@ -255,39 +255,19 @@
           },
           "zwave": {
             "index": 30,
-            "size": 4
+            "size": 4,
+            "signed": false
           },
-          "values": [
-            {
-              "id": "0",
-              "label": {
-                "en": "[LSB] – action"
-              }
-            },
-            {
-              "id": "256",
-              "label": {
-                "en": "Event/State Parameters"
-              }
-            },
-            {
-              "id": "65536",
-              "label": {
-                "en": "Notification Status"
-              }
-            },
-            {
-              "id": "16777216",
-              "label": {
-                "en": "[MSB] – Notification Type"
-              }
-            }
-          ],
-          "type": "dropdown"
+          "attr": {
+            "min": 0,
+            "max": 4294967295,
+            "step": 1
+          },
+          "type": "number"
         },
         {
           "id": "31",
-          "value": "100597760",
+          "value": 100597760,
           "label": {
             "en": "Alarm configuration - 2nd slot"
           },
@@ -296,39 +276,19 @@
           },
           "zwave": {
             "index": 31,
-            "size": 4
+            "size": 4,
+            "signed": false
           },
-          "values": [
-            {
-              "id": "0",
-              "label": {
-                "en": "[LSB] – action"
-              }
-            },
-            {
-              "id": "256",
-              "label": {
-                "en": "Event/State Parameters"
-              }
-            },
-            {
-              "id": "65536",
-              "label": {
-                "en": "Notification Status"
-              }
-            },
-            {
-              "id": "16777216",
-              "label": {
-                "en": "[MSB] – Notification Type"
-              }
-            }
-          ],
-          "type": "dropdown"
+          "attr": {
+            "min": 0,
+            "max": 4294967295,
+            "step": 1
+          },
+          "type": "number"
         },
         {
           "id": "32",
-          "value": "33488896",
+          "value": 33488896,
           "label": {
             "en": "Alarm configuration - 3rd slot"
           },
@@ -337,39 +297,19 @@
           },
           "zwave": {
             "index": 32,
-            "size": 4
+            "size": 4,
+            "signed": false
           },
-          "values": [
-            {
-              "id": "0",
-              "label": {
-                "en": "[LSB] – action"
-              }
-            },
-            {
-              "id": "256",
-              "label": {
-                "en": "Event/State Parameters"
-              }
-            },
-            {
-              "id": "65536",
-              "label": {
-                "en": "Notification Status"
-              }
-            },
-            {
-              "id": "16777216",
-              "label": {
-                "en": "[MSB] – Notification Type"
-              }
-            }
-          ],
-          "type": "dropdown"
+          "attr": {
+            "min": 0,
+            "max": 4294967295,
+            "step": 1
+          },
+          "type": "number"
         },
         {
           "id": "33",
-          "value": "50266112",
+          "value": 50266112,
           "label": {
             "en": "Alarm configuration - 4rd slot"
           },
@@ -378,39 +318,19 @@
           },
           "zwave": {
             "index": 33,
-            "size": 4
+            "size": 4,
+            "signed": false
           },
-          "values": [
-            {
-              "id": "0",
-              "label": {
-                "en": "[LSB] – action"
-              }
-            },
-            {
-              "id": "256",
-              "label": {
-                "en": "Event/State Parameters"
-              }
-            },
-            {
-              "id": "65536",
-              "label": {
-                "en": "Notification Status"
-              }
-            },
-            {
-              "id": "16777216",
-              "label": {
-                "en": "[MSB] – Notification Type"
-              }
-            }
-          ],
-          "type": "dropdown"
+          "attr": {
+            "min": 0,
+            "max": 4294967295,
+            "step": 1
+          },
+          "type": "number"
         },
         {
           "id": "34",
-          "value": "83820544",
+          "value": 83820544,
           "label": {
             "en": "Alarm configuration - 5th slot"
           },
@@ -419,35 +339,15 @@
           },
           "zwave": {
             "index": 34,
-            "size": 4
+            "size": 4,
+            "signed": false
           },
-          "values": [
-            {
-              "id": "0",
-              "label": {
-                "en": "[LSB] – action"
-              }
-            },
-            {
-              "id": "256",
-              "label": {
-                "en": "Event/State Parameters"
-              }
-            },
-            {
-              "id": "65536",
-              "label": {
-                "en": "Notification Status"
-              }
-            },
-            {
-              "id": "16777216",
-              "label": {
-                "en": "[MSB] – Notification Type"
-              }
-            }
-          ],
-          "type": "dropdown"
+          "attr": {
+            "min": 0,
+            "max": 4294967295,
+            "step": 1
+          },
+          "type": "number"
         }
       ]
     }
@@ -456,7 +356,7 @@
     "notification": {
       "type": "enum",
       "title": {
-        "en": "Last blocker"
+        "en": "Active blocker"
       },
       "values": [
         {

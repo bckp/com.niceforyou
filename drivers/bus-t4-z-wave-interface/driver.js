@@ -14,6 +14,13 @@ class BusT4Driver extends Homey.Driver {
     // Conditions
     this.conditionGateIs = this.homey.flow.getConditionCard('gate-is');
     this.conditionGateIsBlocked = this.homey.flow.getConditionCard('gate-is-blocked');
+
+    this.conditionGateIs.registerRunListener(
+      ({ device, state }) => device.getCapabilityValue('state') === state,
+    );
+    this.conditionGateIsBlocked.registerRunListener(
+      ({ device }) => device.getCapabilityValue('notification') !== null,
+    );
   }
 
 }
