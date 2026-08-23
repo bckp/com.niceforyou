@@ -243,3 +243,70 @@ describe('BusT4Device state handling', () => {
     assert.equal(device.baseDeleted, true);
   });
 });
+
+describe('BusT4Device set parser', () => {
+  let device;
+
+  beforeEach(() => {
+    device = new BusT4Device();
+  });
+
+  it('commands opening from closed state', async () => {
+    device.values.state = 'closed';
+
+    const result = device._gateSetParser(false);
+
+    assert.deepEqual(result, {
+      Value: 'on/enable',
+      'Dimming Duration': 'Default',
+    });
+    await device._stateUpdateQueue;
+    assert.equal(device.getCapabilityValue('state'), 'opening');
+    assert.equal(device._timerTargetState, 'open');
+    assert.notEqual(device._timer, null);
+  });
+
+  it('commands closing from open state', async () => {
+    device.values.state = 'open';
+
+    const result = device._gateSetParser(true);
+
+    assert.deepEqual(result, {
+      Value: 'off/disable',
+      'Dimming Duration': 'Default',
+    });
+    await device._stateUpdateQueue;
+    assert.equal(device.getCapabilityValue('state'), 'closing');
+    assert.equal(device._timerTargetState, 'closed');
+    assert.notEqual(device._timer, null);
+  });
+
+  it('does not re-trigger movement when open command given and already open', async () => {
+    device.values.state = 'open';
+
+    const result = device._gateSetParser(false);
+
+    assert.deepEqual(result, {
+      Value: 'on/enable',
+      'Dimming Duration': 'Default',
+    });
+    await device._stateUpdateQueue;
+    assert.equal(device.getCapabilityValue('state'), 'open');
+    assert.equal(device._timer, null);
+  });
+
+  it('does not re-trigger movement when close command given and already closed', async () => {
+    device.values.state = 'closed';
+
+    const result = device._gateSetParser(true);
+
+    assert.deepEqual(result, {
+      Value: 'off/disable',
+      'Dimming Duration': 'Default',
+    });
+    await device._stateUpdateQueue;
+    assert.equal(device.getCapabilityValue('state'), 'closed');
+    assert.equal(device._timer, null);
+  });
+});
+

@@ -186,17 +186,18 @@ class BusT4Device extends ZwaveDevice {
       this.log('Set parser:', value);
 
       const state = this.getCapabilityValue('state');
-      if (
-        (value && state !== STATE_OPEN)
-            || (!value && state !== STATE_CLOSED)
-      ) {
+      const shouldMove = value
+        ? state !== STATE_CLOSED
+        : state !== STATE_OPEN;
+
+      if (shouldMove) {
         // set state, enable delayed state change
-        this.setState(value ? STATE_OPENING : STATE_CLOSING).catch(
+        this.setState(value ? STATE_CLOSING : STATE_OPENING).catch(
           (err) => this.error('Could not set commanded gate state', err),
         );
 
         // set timeout by user setting value, to change state again
-        this._setTimerState(value ? STATE_OPEN : STATE_CLOSED);
+        this._setTimerState(value ? STATE_CLOSED : STATE_OPEN);
       }
 
       return {

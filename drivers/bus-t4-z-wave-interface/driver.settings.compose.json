@@ -81,7 +81,7 @@
     "id": "33",
     "value": 50266112,
     "label": {
-      "en": "Alarm configuration - 4rd slot"
+      "en": "Alarm configuration - 4th slot"
     },
     "hint": {
       "en": "This parameter determines to which alarm frames and how the device should react. The parameters consist of 4 bytes, three most significant bytes are set according to the official Z-Wave protocol specification.\r\nDefault value [0x02, 0xFF, 0x00, 0x00] (CO Alarm, any notification, no action).\r\nThe 4 bytes must be converted to a single decimal value to be entered in the gateway sending the configuration parameter value. Example: Event: Home Security (0x07) Status: Motion Detected (0x08) Parameter: None (0x00) Action: Open (0x01) = 0x07080001 which is 117964801 decimal to be entered in the gateway. "
