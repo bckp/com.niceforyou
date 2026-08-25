@@ -1,23 +1,25 @@
 {
   "name": "com.niceforyou",
-  "version": "1.0.0",
+  "version": "2.0.2",
   "main": "app.js",
   "dependencies": {
-    "homey-zwavedriver": "^2.1.10"
+    "homey-zwavedriver": "^2.2.3"
   },
   "devDependencies": {
-    "@tsconfig/node12": "^1.0.11",
-    "@types/homey": "npm:homey-apps-sdk-v3-types@^0.3.4",
-    "@types/node": "^20.2.0",
-    "eslint": "^7.32.0",
-    "eslint-config-athom": "^3.1.1"
+    "@eslint/js": "^10.0.1",
+    "@tsconfig/node12": "^12.1.7",
+    "@types/homey": "npm:homey-apps-sdk-v3-types@^0.3.12",
+    "@types/node": "^26.1.1",
+    "eslint": "^10.7.0",
+    "globals": "^17.7.0"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bckp/com.niceforyou.git"
   },
   "scripts": {
-    "lint": "eslint --ext .js,.ts --ignore-path .gitignore ."
+    "lint": "eslint .",
+    "test": "node --test"
   },
   "author": "Radovan Kepák",
   "license": "MIT",
