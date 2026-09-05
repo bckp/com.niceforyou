@@ -1,6 +1,6 @@
 {
   "name": "com.niceforyou",
-  "version": "2.0.2",
+  "version": "2.2.0",
   "main": "app.js",
   "dependencies": {
     "homey-zwavedriver": "^2.2.3"
@@ -25,7 +25,9 @@
     "typecheck": "tsc -p tsconfig.test.json",
     "lint": "eslint .",
     "test": "node --import tsx --test test/*.test.ts",
-    "check": "npm run typecheck && npm run lint && npm test"
+    "check": "npm run typecheck && npm run lint && npm test",
+    "sync-version": "node scripts/sync-version.js",
+    "publish-app": "homey app publish && node scripts/sync-version.js"
   },
   "author": "Radovan Kepák",
   "license": "MIT",

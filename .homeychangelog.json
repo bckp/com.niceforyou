@@ -55,5 +55,8 @@
   },
   "2.1.1": {
     "en": "Fixed gate state not updating in Homey when the gate is operated by a remote (state updates no longer wait for Flow triggers), fixed onoff sync on devices paired with v1"
+  },
+  "2.2.0": {
+    "en": "Typescript rewrite"
   }
 }

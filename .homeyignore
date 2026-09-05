@@ -2,3 +2,4 @@ test/
 types/
 tsconfig.test.json
 eslint.config.js
+scripts/
