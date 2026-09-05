@@ -34,11 +34,10 @@ class BusT4Device extends ZwaveDevice {
         report: 'SWITCH_MULTILEVEL_REPORT',
         reportParserOverride: true,
         getOnStart: true,
-        fn: (isClosed) => {
-          this._syncLegacyOnOff(isClosed).catch(
-            (err) => this.error('Could not synchronize legacy onoff capability', err),
-          );
-        },
+        // homey-zwavedriver reads the post-set / post-report hook from
+        // setOpts.fn and reportOpts.fn, a top-level `fn` is ignored.
+        setOpts: { fn: this._onGarageDoorValue.bind(this) },
+        reportOpts: { fn: this._onGarageDoorValue.bind(this) },
         setParser: this._gateSetParser.bind(this),
         reportParser: this._gateReportParser.bind(this),
       });
@@ -110,12 +109,27 @@ class BusT4Device extends ZwaveDevice {
         await this.setNotification(null);
       }
 
+      this.log(`State changed to ${state}`);
       await this.setCapabilityValue('state', state);
 
       // If no silent mode for init, trigger
       if (!silent) {
-        await this.driver.stateChangedTrigger.trigger(this, { state });
+        this._triggerFlow(this.driver.stateChangedTrigger, { state });
       }
+    }
+
+    /**
+     * Fire a Flow trigger without blocking the update queues on it. The Flow
+     * engine may take long (or never settle), which must not delay or block
+     * subsequent capability updates.
+     * @param {import('homey').FlowCardTriggerDevice} card
+     * @param {object} tokens
+     * @private
+     */
+    _triggerFlow(card, tokens) {
+      Promise.resolve()
+        .then(() => card.trigger(this, tokens))
+        .catch((err) => this.error('Could not trigger Flow', tokens, err));
     }
 
     /**
@@ -144,10 +158,23 @@ class BusT4Device extends ZwaveDevice {
         return;
       }
 
+      this.log(`Notification changed to ${notification}`);
+
       // If notification is set, and no silent mode for init, trigger
       if (notification !== null && !silent) {
-        await this.driver.notificationReceivedTrigger.trigger(this, { notification });
+        this._triggerFlow(this.driver.notificationReceivedTrigger, { notification });
       }
+    }
+
+    /**
+     * Called by homey-zwavedriver after a garagedoor_closed SET or REPORT.
+     * @param {boolean} isClosed
+     * @private
+     */
+    _onGarageDoorValue(isClosed) {
+      this._syncLegacyOnOff(isClosed).catch(
+        (err) => this.error('Could not synchronize legacy onoff capability', err),
+      );
     }
 
     _registerLegacyOnOffCapability() {

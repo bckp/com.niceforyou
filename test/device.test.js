@@ -73,6 +73,19 @@ class MockZwaveDevice {
     this.capabilityListeners[capability] = listener;
   }
 
+  enableDebug() {}
+
+  registerCapability(capability, commandClass, opts) {
+    this.registeredCapabilities = this.registeredCapabilities || {};
+    this.registeredCapabilities[capability] = { commandClass, opts };
+  }
+
+  registerReportListener() {}
+
+  refreshCapabilityValue() {
+    return Promise.resolve();
+  }
+
   triggerCapabilityListener(capability, value, opts) {
     return this.capabilityListeners[capability](value, opts);
   }
@@ -179,6 +192,28 @@ describe('BusT4Device v1 onoff compatibility', () => {
     assert.equal(device.getCapabilityValue('onoff'), true);
   });
 
+  it('registers the onoff sync where homey-zwavedriver actually reads it', async () => {
+    const v1Device = new BusT4Device();
+    v1Device.values.onoff = false;
+
+    await v1Device.onNodeInit({ node: {} });
+
+    const { opts } = v1Device.registeredCapabilities.garagedoor_closed;
+    assert.equal(opts.fn, undefined);
+    assert.equal(typeof opts.setOpts.fn, 'function');
+    assert.equal(typeof opts.reportOpts.fn, 'function');
+
+    // gate reported open -> legacy onoff must become true
+    opts.reportOpts.fn.call(v1Device, false);
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(v1Device.getCapabilityValue('onoff'), true);
+
+    // app commanded close -> legacy onoff must become false
+    opts.setOpts.fn.call(v1Device, true);
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(v1Device.getCapabilityValue('onoff'), false);
+  });
+
   it('does not register the bridge on a v2 device without onoff', () => {
     const v2Device = new BusT4Device();
     v2Device.capabilities.delete('onoff');
@@ -202,6 +237,49 @@ describe('BusT4Device state handling', () => {
     };
 
     await device.setState('opening');
+  });
+
+  it('keeps applying reported states while a Flow trigger never settles', async () => {
+    device.driver.stateChangedTrigger.trigger = () => new Promise(() => {});
+
+    device._gateReportParser(gateReport(0xFE, 0x63));
+    device._gateReportParser(gateReport(0x63, 0x63));
+    device._gateReportParser(gateReport(0xFE, 0x00));
+    device._gateReportParser(gateReport(0x00, 0x00));
+    await device._stateUpdateQueue;
+
+    assert.equal(device.getCapabilityValue('state'), 'closed');
+  });
+
+  it('keeps applying states while a notification Flow trigger never settles', async () => {
+    device.driver.notificationReceivedTrigger.trigger = () => new Promise(() => {});
+
+    await device.setNotification('beam');
+    assert.equal(device.getCapabilityValue('notification'), 'beam');
+    assert.equal(device.getCapabilityValue('alarm_generic'), true);
+
+    // closed resets the notification through the notification queue
+    device.values.state = 'closing';
+    await device.setState('closed');
+
+    assert.equal(device.getCapabilityValue('state'), 'closed');
+    assert.equal(device.getCapabilityValue('notification'), null);
+    assert.equal(device.getCapabilityValue('alarm_generic'), false);
+  });
+
+  it('logs a rejected Flow trigger instead of failing the state update', async () => {
+    const errors = [];
+    device.error = (...args) => errors.push(args);
+    device.driver.stateChangedTrigger.trigger = async () => {
+      throw new Error('flow engine down');
+    };
+
+    await device.setState('opening');
+    await new Promise((resolve) => setImmediate(resolve));
+
+    assert.equal(device.getCapabilityValue('state'), 'opening');
+    assert.equal(errors.length, 1);
+    assert.equal(errors[0][2].message, 'flow engine down');
   });
 
   it('keeps the fallback timer for a duplicate movement report', () => {
