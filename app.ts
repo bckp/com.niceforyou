@@ -1,16 +1,14 @@
-'use strict';
-
-const Homey = require('homey');
+import Homey from 'homey';
 
 class NiceApp extends Homey.App {
 
   /**
    * onInit is called when the app is initialized.
    */
-  async onInit() {
+  override async onInit(): Promise<void> {
     this.log('NICE has been initialized');
   }
 
 }
 
-module.exports = NiceApp;
+export = NiceApp;

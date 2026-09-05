@@ -1,132 +1,167 @@
-'use strict';
+import assert from 'node:assert/strict';
+import Module from 'node:module';
+import { beforeEach, describe, it } from 'node:test';
 
-const assert = require('node:assert/strict');
-const Module = require('node:module');
-const { beforeEach, describe, it } = require('node:test');
+type Listener = (value: unknown, opts?: unknown) => Promise<unknown> | unknown;
 
+interface MockTimer {
+  callback: () => void;
+  delay: number;
+  cleared?: boolean;
+}
+
+interface RegisteredCapability {
+  commandClass: string;
+  opts: {
+    fn?: (...args: unknown[]) => void;
+    setOpts?: { fn?: (...args: unknown[]) => void };
+    reportOpts?: { fn?: (...args: unknown[]) => void };
+  };
+}
+
+/**
+ * Stand-in for homey-zwavedriver's ZwaveDevice (which in turn is a Homey
+ * Device). Only the surface used by BusT4Device is implemented.
+ */
 class MockZwaveDevice {
 
-  constructor() {
-    this.capabilities = new Set(['onoff']);
-    this.capabilityListeners = {};
-    this.deviceClass = 'other';
-    this.values = {
-      alarm_generic: false,
-      notification: null,
-      state: 'closed',
-    };
-    this.driver = {
-      notificationReceivedTrigger: {
-        trigger: async () => {},
-      },
-      stateChangedTrigger: {
-        trigger: async () => {},
-      },
-    };
-    this.homey = {
-      clearTimeout: (timer) => {
-        timer.cleared = true;
-      },
-      setTimeout: (callback, delay) => ({ callback, delay }),
-    };
-  }
+  baseDeleted = false;
+  capabilities = new Set<string>(['onoff']);
+  capabilityListeners: Record<string, Listener> = {};
+  deviceClass = 'other';
+  lastGarageCommand: unknown = undefined;
+  registeredCapabilities: Record<string, RegisteredCapability> = {};
+  values: Record<string, unknown> = {
+    alarm_generic: false,
+    notification: null,
+    state: 'closed',
+  };
 
-  addCapability(capability) {
+  driver = {
+    notificationReceivedTrigger: {
+      trigger: async (): Promise<unknown> => undefined,
+    },
+    stateChangedTrigger: {
+      trigger: async (): Promise<unknown> => undefined,
+    },
+  };
+
+  homey = {
+    clearTimeout: (timer: MockTimer) => {
+      timer.cleared = true;
+    },
+    setTimeout: (callback: () => void, delay: number): MockTimer => ({ callback, delay }),
+  };
+
+  addCapability(capability: string): Promise<void> {
     this.capabilities.add(capability);
     return Promise.resolve();
   }
 
-  getCapabilityValue(capability) {
+  getCapabilityValue(capability: string): unknown {
     return this.values[capability];
   }
 
-  getClass() {
+  getClass(): string {
     return this.deviceClass;
   }
 
-  getName() {
+  getName(): string {
     return 'Test gate';
   }
 
-  getSetting() {
+  getSetting(): unknown {
     return 10000;
   }
 
-  hasCapability(capability) {
+  hasCapability(capability: string): boolean {
     return this.capabilities.has(capability);
   }
 
-  log() {}
+  log(): void {}
 
-  error() {}
+  error(): void {}
 
-  onDeleted() {
+  onDeleted(): void {
     this.baseDeleted = true;
   }
 
-  removeCapability(capability) {
+  removeCapability(capability: string): Promise<void> {
     this.capabilities.delete(capability);
     return Promise.resolve();
   }
 
-  registerCapabilityListener(capability, listener) {
+  registerCapabilityListener(capability: string, listener: Listener): void {
     this.capabilityListeners[capability] = listener;
   }
 
-  enableDebug() {}
-
-  registerCapability(capability, commandClass, opts) {
-    this.registeredCapabilities = this.registeredCapabilities || {};
-    this.registeredCapabilities[capability] = { commandClass, opts };
+  triggerCapabilityListener(capability: string, value: unknown, opts?: unknown): Promise<unknown> {
+    return Promise.resolve(this.capabilityListeners[capability](value, opts));
   }
 
-  registerReportListener() {}
-
-  refreshCapabilityValue() {
-    return Promise.resolve();
-  }
-
-  triggerCapabilityListener(capability, value, opts) {
-    return this.capabilityListeners[capability](value, opts);
-  }
-
-  setCapabilityValue(capability, value) {
+  setCapabilityValue(capability: string, value: unknown): Promise<void> {
     this.values[capability] = value;
     return Promise.resolve();
   }
 
-  setClass(deviceClass) {
+  setClass(deviceClass: string): Promise<void> {
     this.deviceClass = deviceClass;
+    return Promise.resolve();
+  }
+
+  enableDebug(): void {}
+
+  registerCapability(capability: string, commandClass: string, opts: RegisteredCapability['opts']): void {
+    this.registeredCapabilities[capability] = { commandClass, opts };
+  }
+
+  registerReportListener(): void {}
+
+  refreshCapabilityValue(): Promise<void> {
     return Promise.resolve();
   }
 
 }
 
-const originalLoad = Module._load;
-Module._load = function load(request, parent, isMain) {
+// Swap homey-zwavedriver for the mock before the device module is loaded.
+type ModuleLoader = (request: string, parent: unknown, isMain: boolean) => unknown;
+const moduleInternals = Module as unknown as { _load: ModuleLoader };
+const originalLoad = moduleInternals._load;
+moduleInternals._load = function load(request, parent, isMain) {
   if (request === 'homey-zwavedriver') {
     return { ZwaveDevice: MockZwaveDevice };
   }
   return originalLoad.call(this, request, parent, isMain);
 };
-const BusT4Device = require('../drivers/bus-t4-z-wave-interface/device');
-Module._load = originalLoad;
+import BusT4DeviceClass = require('../drivers/bus-t4-z-wave-interface/device');
+moduleInternals._load = originalLoad;
 
-function gateReport(currentValue, targetValue) {
+type BusT4Device = InstanceType<typeof BusT4DeviceClass>;
+type TestDevice = Omit<BusT4Device, keyof MockZwaveDevice | '_timer'> & MockZwaveDevice & {
+  _timer: MockTimer | null;
+};
+
+function createDevice(): TestDevice {
+  return new BusT4DeviceClass() as unknown as TestDevice;
+}
+
+function gateReport(currentValue: number, targetValue: number) {
   return {
     'Current Value (Raw)': Buffer.from([currentValue]),
     'Target Value (Raw)': Buffer.from([targetValue]),
   };
 }
 
+const nextTick = () => new Promise<void>((resolve) => setImmediate(resolve));
+
 describe('BusT4Device migration', () => {
-  let device;
+  let device: TestDevice;
 
   beforeEach(() => {
-    device = new BusT4Device();
+    device = createDevice();
   });
 
-  it('migrates class and capabilities before resolving', async () => {
+  it('migrates a v1 device without touching onoff', async () => {
     await device.initMigration();
 
     assert.equal(device.getClass(), 'garagedoor');
@@ -157,10 +192,10 @@ describe('BusT4Device migration', () => {
 });
 
 describe('BusT4Device v1 onoff compatibility', () => {
-  let device;
+  let device: TestDevice;
 
   beforeEach(() => {
-    device = new BusT4Device();
+    device = createDevice();
     device.capabilities.add('garagedoor_closed');
     device.registerCapabilityListener('garagedoor_closed', async (isClosed) => {
       device.lastGarageCommand = isClosed;
@@ -193,29 +228,29 @@ describe('BusT4Device v1 onoff compatibility', () => {
   });
 
   it('registers the onoff sync where homey-zwavedriver actually reads it', async () => {
-    const v1Device = new BusT4Device();
+    const v1Device = createDevice();
     v1Device.values.onoff = false;
 
-    await v1Device.onNodeInit({ node: {} });
+    await v1Device.onNodeInit();
 
     const { opts } = v1Device.registeredCapabilities.garagedoor_closed;
     assert.equal(opts.fn, undefined);
-    assert.equal(typeof opts.setOpts.fn, 'function');
-    assert.equal(typeof opts.reportOpts.fn, 'function');
+    assert.equal(typeof opts.setOpts?.fn, 'function');
+    assert.equal(typeof opts.reportOpts?.fn, 'function');
 
     // gate reported open -> legacy onoff must become true
-    opts.reportOpts.fn.call(v1Device, false);
-    await new Promise((resolve) => setImmediate(resolve));
+    opts.reportOpts?.fn?.call(v1Device, false);
+    await nextTick();
     assert.equal(v1Device.getCapabilityValue('onoff'), true);
 
     // app commanded close -> legacy onoff must become false
-    opts.setOpts.fn.call(v1Device, true);
-    await new Promise((resolve) => setImmediate(resolve));
+    opts.setOpts?.fn?.call(v1Device, true);
+    await nextTick();
     assert.equal(v1Device.getCapabilityValue('onoff'), false);
   });
 
   it('does not register the bridge on a v2 device without onoff', () => {
-    const v2Device = new BusT4Device();
+    const v2Device = createDevice();
     v2Device.capabilities.delete('onoff');
 
     v2Device._registerLegacyOnOffCapability();
@@ -225,18 +260,23 @@ describe('BusT4Device v1 onoff compatibility', () => {
 });
 
 describe('BusT4Device state handling', () => {
-  let device;
+  let device: TestDevice;
 
   beforeEach(() => {
-    device = new BusT4Device();
+    device = createDevice();
   });
 
   it('updates the capability before triggering its Flow', async () => {
+    let triggered = false;
     device.driver.stateChangedTrigger.trigger = async () => {
       assert.equal(device.getCapabilityValue('state'), 'opening');
+      triggered = true;
     };
 
     await device.setState('opening');
+    await nextTick();
+
+    assert.equal(triggered, true);
   });
 
   it('keeps applying reported states while a Flow trigger never settles', async () => {
@@ -268,18 +308,20 @@ describe('BusT4Device state handling', () => {
   });
 
   it('logs a rejected Flow trigger instead of failing the state update', async () => {
-    const errors = [];
-    device.error = (...args) => errors.push(args);
+    const errors: unknown[][] = [];
+    device.error = (...args: unknown[]) => {
+      errors.push(args);
+    };
     device.driver.stateChangedTrigger.trigger = async () => {
       throw new Error('flow engine down');
     };
 
     await device.setState('opening');
-    await new Promise((resolve) => setImmediate(resolve));
+    await nextTick();
 
     assert.equal(device.getCapabilityValue('state'), 'opening');
     assert.equal(errors.length, 1);
-    assert.equal(errors[0][2].message, 'flow engine down');
+    assert.equal((errors[0][2] as Error).message, 'flow engine down');
   });
 
   it('keeps the fallback timer for a duplicate movement report', () => {
@@ -289,7 +331,7 @@ describe('BusT4Device state handling', () => {
 
     assert.equal(device._gateReportParser(gateReport(0xFE, 0x63)), false);
     assert.equal(device._timer, timer);
-    assert.notEqual(timer.cleared, true);
+    assert.notEqual(timer?.cleared, true);
   });
 
   it('clears all timing state for a terminal report', () => {
@@ -298,7 +340,7 @@ describe('BusT4Device state handling', () => {
     const timer = device._timer;
 
     assert.equal(device._gateReportParser(gateReport(0x63, 0x63)), false);
-    assert.equal(timer.cleared, true);
+    assert.equal(timer?.cleared, true);
     assert.equal(device._timer, null);
     assert.equal(device._movementStartedAt, null);
   });
@@ -316,17 +358,17 @@ describe('BusT4Device state handling', () => {
 
     device.onDeleted();
 
-    assert.equal(timer.cleared, true);
+    assert.equal(timer?.cleared, true);
     assert.equal(device._movementStartedAt, null);
     assert.equal(device.baseDeleted, true);
   });
 });
 
 describe('BusT4Device set parser', () => {
-  let device;
+  let device: TestDevice;
 
   beforeEach(() => {
-    device = new BusT4Device();
+    device = createDevice();
   });
 
   it('commands opening from closed state', async () => {
@@ -386,5 +428,18 @@ describe('BusT4Device set parser', () => {
     assert.equal(device.getCapabilityValue('state'), 'closed');
     assert.equal(device._timer, null);
   });
-});
 
+  it('applies the final state when the fallback timer fires', async () => {
+    device.values.state = 'closed';
+    device._gateSetParser(false);
+    const timer = device._timer;
+    assert.ok(timer);
+
+    timer.callback();
+    await device._stateUpdateQueue;
+
+    assert.equal(device.getCapabilityValue('state'), 'open');
+    assert.equal(device._timer, null);
+    assert.equal(device._movementStartedAt, null);
+  });
+});

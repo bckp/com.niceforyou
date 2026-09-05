@@ -4,6 +4,12 @@
     "en": "Bus T4 Z-Wave interface"
   },
   "class": "garagedoor",
+  "platforms": [
+    "local"
+  ],
+  "connectivity": [
+    "zwave"
+  ],
   "capabilities": [
     "garagedoor_closed",
     "state",

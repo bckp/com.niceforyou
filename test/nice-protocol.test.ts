@@ -1,13 +1,12 @@
-'use strict';
-
-const assert = require('node:assert/strict');
-const { describe, it } = require('node:test');
-const {
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+import {
   decodeGateStateReport,
   decodeNotificationReport,
-} = require('../lib/nice-protocol');
+} from '../lib/nice-protocol';
+import type { GateState } from '../lib/nice-protocol';
 
-function gateReport(currentValue, targetValue) {
+function gateReport(currentValue: number, targetValue: number) {
   return {
     'Current Value (Raw)': Buffer.from([currentValue]),
     'Target Value (Raw)': Buffer.from([targetValue]),
@@ -15,7 +14,7 @@ function gateReport(currentValue, targetValue) {
 }
 
 describe('decodeGateStateReport', () => {
-  const cases = [
+  const cases: Array<[number, number, GateState]> = [
     [0x00, 0x00, 'closed'],
     [0x63, 0x63, 'open'],
     [0xFE, 0x00, 'closing'],
@@ -26,8 +25,16 @@ describe('decodeGateStateReport', () => {
   cases.forEach(([currentValue, targetValue, expectedState]) => {
     it(`decodes ${expectedState}`, () => {
       const result = decodeGateStateReport(gateReport(currentValue, targetValue));
-      assert.equal(result.state, expectedState);
+      assert.equal(result?.state, expectedState);
     });
+  });
+
+  it('accepts already parsed numeric values', () => {
+    const result = decodeGateStateReport({
+      'Current Value (Raw)': 0xFE,
+      'Target Value (Raw)': 0x63,
+    });
+    assert.equal(result?.state, 'opening');
   });
 
   it('preserves diagnostic values for an unknown state', () => {
@@ -42,6 +49,8 @@ describe('decodeGateStateReport', () => {
 
   it('ignores incomplete reports', () => {
     assert.equal(decodeGateStateReport({}), null);
+    assert.equal(decodeGateStateReport(null), null);
+    assert.equal(decodeGateStateReport('garbage'), null);
   });
 });
 
@@ -89,5 +98,10 @@ describe('decodeNotificationReport', () => {
       'Event Parameter': Buffer.from([0x03]),
       'Notification Type': 'System',
     }), null);
+  });
+
+  it('ignores reports without an event', () => {
+    assert.equal(decodeNotificationReport({ 'Notification Type': 'System' }), undefined);
+    assert.equal(decodeNotificationReport(undefined), undefined);
   });
 });

@@ -7,24 +7,33 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@tsconfig/node12": "^12.1.7",
+    "@tsconfig/node22": "^22.0.6",
     "@types/homey": "npm:homey-apps-sdk-v3-types@^0.3.12",
-    "@types/node": "^26.1.1",
+    "@types/node": "^22.20.1",
     "eslint": "^10.7.0",
-    "globals": "^17.7.0"
+    "globals": "^17.7.0",
+    "tsx": "^4.23.13",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.69.0"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bckp/com.niceforyou.git"
   },
   "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc -p tsconfig.test.json",
     "lint": "eslint .",
-    "test": "node --test"
+    "test": "node --import tsx --test test/*.test.ts",
+    "check": "npm run typecheck && npm run lint && npm test"
   },
   "author": "Radovan Kepák",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/bckp/com.niceforyou/issues"
   },
-  "homepage": "https://github.com/bckp/com.niceforyou#readme"
+  "homepage": "https://github.com/bckp/com.niceforyou#readme",
+  "engines": {
+    "node": ">=22.0.0"
+  }
 }
